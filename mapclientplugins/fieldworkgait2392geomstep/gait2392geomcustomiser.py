@@ -99,10 +99,10 @@ class Gait2392GeomCustomiser(object):
         """
 
         self.LL = bonemodels.LowerLimbLeftAtlas('left lower limb')
-        self.LL.set_bone_gfield('pelvis', self.input_gfields_dict['pelvis'])
-        self.LL.set_bone_gfield('femur', self.input_gfields_dict['femur'])
-        self.LL.set_bone_gfield('patella', self.input_gfields_dict['patella'])
-        self.LL.set_bone_gfield('tibiafibula', self.input_gfields_dict['tibiafibula'])
+        self.LL.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
+        self.LL.set_bone_gfield('femur', gfieldsdict['femur'])
+        self.LL.set_bone_gfield('patella', gfieldsdict['patella'])
+        self.LL.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula'])
 
     @property
     def pelvisRigid(self):
@@ -199,9 +199,9 @@ class Gait2392GeomCustomiser(object):
         self.kneeRot = value[3]
         self.lastTransformSet = self.perBoneScalingX
 
-    def _save_vtp(self, gf, filename):
+    def _save_vtp(self, gf, filename, bodycoordmapper):
         v, f = gf.triangulate(self.gfield_disc)
-        v_local = pelvis.acs.map_local(v)
+        v_local = bodycoordmapper(v)
         vtkwriter = vtktools.Writer(
                         v=v_local,
                         f=f,
@@ -210,7 +210,7 @@ class Gait2392GeomCustomiser(object):
         vtkwriter.writeVTP()
 
     def cust_osim_pelvis(self):
-        osim_pelvis = self.osimmodel.getBody(self.OSIM_BODY_NAME_MAP['pelvis'])
+        osim_pelvis = self.osimmodel.getBody(OSIM_BODY_NAME_MAP['pelvis'])
         pelvis = self.LL.models['pelvis']
 
 
@@ -230,22 +230,22 @@ class Gait2392GeomCustomiser(object):
 
         ## sacrum.vtp
         sac_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, SACRUM_FILENAME)
-        self._save_vtp(sacgf, sac_vtp_fn)
+        self._save_vtp(sacgf, sac_vtp_fn, pelvis.acs.map_local)
         osim_pelvis.setDisplayGeometryFileName(sac_vtp_fn, SACRUM_FILENAME)
 
         ## pelvis.vtp
         rh_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
-        self._save_vtp(rhgf, rh_vtp_fn)
+        self._save_vtp(rhgf, rh_vtp_fn, pelvis.acs.map_local)
         osim_pelvis.setDisplayGeometryFileName(rh_vtp_fn, HEMIPELVIS_RIGHT_FILENAME)
 
         ## l_pelvis.vtp
         lh_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_LEFT_FILENAME)
-        self._save_vtp(lhgf, lh_vtp_fn)
+        self._save_vtp(lhgf, lh_vtp_fn, pelvis.acs.map_local)
         osim_pelvis.setDisplayGeometryFileName(lh_vtp_fn, HEMIPELVIS_LEFT_FILENAME)
 
 
     def cust_osim_femur_left(self):
-        osim_femur = self.osimmodel.getBodySet().get(self.OSIM_BODY_NAME_MAP['femur'])
+        osim_femur = self.osimmodel.getBody(OSIM_BODY_NAME_MAP['femur'])
         femur = self.LL.models['femur']
 
         # update hip_l joint 
@@ -265,12 +265,12 @@ class Gait2392GeomCustomiser(object):
         # update mesh l_femur.vtp
         self._check_geom_path()
         femur_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, FEMUR_LEFT_FILENAME)
-        self._save_vtp(femur.gf, femur_vtp_fn)
-        osim_pelvis.setDisplayGeometryFileName(femur_vtp_fn, FEMUR_LEFT_FILENAME)
+        self._save_vtp(femur.gf, femur_vtp_fn, femur.acs.map_local)
+        osim_femur.setDisplayGeometryFileName(femur_vtp_fn, FEMUR_LEFT_FILENAME)
 
     def cust_osim_tibiafibula_left(self):
-        osim_femur = self.osimmodel.getBodySet().get(self.OSIM_BODY_NAME_MAP['tibiafibula'])
-        tibfib = self.LL.model['tibiafibula']
+        osim_tibfib = self.osimmodel.getBody(OSIM_BODY_NAME_MAP['tibiafibula'])
+        tibfib = self.LL.models['tibiafibula']
         # update knee_l joint
 
         ## location in parent
@@ -280,8 +280,8 @@ class Gait2392GeomCustomiser(object):
         # update mesh l_tibia.vtp
         self._check_geom_path()
         tibfib_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, TIBFIB_LEFT_FILENAME)
-        self._save_vtp(tibfib.gf, tibfib_vtp_fn)
-        osim_pelvis.setDisplayGeometryFileName(tibfib_vtp_fn, TIBFIB_LEFT_FILENAME)
+        self._save_vtp(tibfib.gf, tibfib_vtp_fn, tibfib.acs.map_local)
+        osim_tibfib.setDisplayGeometryFileName(tibfib_vtp_fn, TIBFIB_LEFT_FILENAME)
 
     def write_cust_osim_model(self):
         self.osimmodel.save(
