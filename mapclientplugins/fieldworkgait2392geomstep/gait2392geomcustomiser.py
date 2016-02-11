@@ -11,11 +11,13 @@ from gias2.musculoskeletal import mocap_landmark_preprocess
 from gias2.musculoskeletal.bonemodels import bonemodels
 from gias2.musculoskeletal.bonemodels import lowerlimbatlasfit
 from gias2.musculoskeletal.bonemodels import lowerlimbatlasfitscaling
+from gias2.musculoskeletal import osim
 
 import opensim
 
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
-TEMPLATE_OSIM_FILENAME = os.path.join(SELF_DIR, 'data/gait2392_simbody.osim')
+TEMPLATE_OSIM_PATH = os.path.join(SELF_DIR, 'data/gait2392_simbody.osim')
+OSIM_FILENAME = 'gait2392_simbody.osim'
 OSIM_BODY_NAME_MAP = {'pelvis': 'pelvis',
                       'femur': 'femur_l',
                       'tibiafibula': 'tibia_l',
@@ -32,6 +34,7 @@ TIBFIB_SUBMESH_ELEMS = {'tibia': range(0, 46),
                         }
 TIBFIB_BASISTYPES = {'tri10':'simplex_L3_L3','quad44':'quad_L3_L3'}
 
+GEOM_DIR = 'geom/'
 SACRUM_FILENAME = 'sacrum.vtp'
 HEMIPELVIS_RIGHT_FILENAME = 'pelvis.vtp'
 HEMIPELVIS_LEFT_FILENAME = 'l_pelvis.vtp'
@@ -57,7 +60,7 @@ class Gait2392GeomCustomiser(object):
         self._init_osim_model()
 
     def _init_osim_model(self):
-        self.osimmodel = opensim.Model(TEMPLATE_OSIM_FILENAME)
+        self.osimmodel = osim.Model(TEMPLATE_OSIM_PATH)
 
     def _splitPelvisGFs(self):
         """
@@ -82,6 +85,14 @@ class Gait2392GeomCustomiser(object):
                     )
         return lhgf, sacgf, rhgf
 
+    def _check_geom_path(self):
+        """
+        Check that the directory for geom meshes exists. If not, create it.
+        """
+        geom_dir = os.path.join(self.config['osim_output_dir'], GEOM_DIR)
+        if not os.path.isdir(geom_dir):
+            os.mkdir(geom_dir)
+        
     def set_model_gfields(self, gfieldsdict):
         """
         Instantiate the lower limb object using input models
@@ -199,7 +210,7 @@ class Gait2392GeomCustomiser(object):
         vtkwriter.writeVTP()
 
     def cust_osim_pelvis(self):
-        osim_pelvis = self.osimmodel.getBodySet().get(self.OSIM_BODY_NAME_MAP['pelvis'])
+        osim_pelvis = self.osimmodel.getBody(self.OSIM_BODY_NAME_MAP['pelvis'])
         pelvis = self.LL.models['pelvis']
 
 
@@ -215,24 +226,22 @@ class Gait2392GeomCustomiser(object):
 
         # update mesh
         lhgf, sacgf, rhgf = self._splitPelvisGFs()
+        self._check_geom_path()
 
         ## sacrum.vtp
-        self._save_vtp(
-            sacgf,
-            os.path.join(self.config['osim_output_dir'], SACRUM_FILENAME)
-            )
+        sac_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, SACRUM_FILENAME)
+        self._save_vtp(sacgf, sac_vtp_fn)
+        osim_pelvis.setDisplayGeometryFileName(sac_vtp_fn, SACRUM_FILENAME)
 
         ## pelvis.vtp
-        self._save_vtp(
-            rhgf,
-            os.path.join(self.config['osim_output_dir'], HEMIPELVIS_RIGHT_FILENAME)
-            )
+        rh_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
+        self._save_vtp(rhgf, rh_vtp_fn)
+        osim_pelvis.setDisplayGeometryFileName(rh_vtp_fn, HEMIPELVIS_RIGHT_FILENAME)
 
         ## l_pelvis.vtp
-        self._save_vtp(
-            lhgf,
-            os.path.join(self.config['osim_output_dir'], HEMIPELVIS_LEFT_FILENAME)
-            )
+        lh_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_LEFT_FILENAME)
+        self._save_vtp(lhgf, lh_vtp_fn)
+        osim_pelvis.setDisplayGeometryFileName(lh_vtp_fn, HEMIPELVIS_LEFT_FILENAME)
 
 
     def cust_osim_femur_left(self):
@@ -254,10 +263,10 @@ class Gait2392GeomCustomiser(object):
         ## hip_rotation_l
 
         # update mesh l_femur.vtp
-        self._save_vtp(
-            femur.gf,
-            os.path.join(self.config['osim_output_dir'], FEMUR_LEFT_FILENAME)
-            )
+        self._check_geom_path()
+        femur_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, FEMUR_LEFT_FILENAME)
+        self._save_vtp(femur.gf, femur_vtp_fn)
+        osim_pelvis.setDisplayGeometryFileName(femur_vtp_fn, FEMUR_LEFT_FILENAME)
 
     def cust_osim_tibiafibula_left(self):
         osim_femur = self.osimmodel.getBodySet().get(self.OSIM_BODY_NAME_MAP['tibiafibula'])
@@ -269,7 +278,12 @@ class Gait2392GeomCustomiser(object):
         ## location in self
 
         # update mesh l_tibia.vtp
-        self._save_vtp(
-            tibfib.gf,
-            os.path.join(self.config['osim_output_dir'], TIBFIB_LEFT_FILENAME)
+        self._check_geom_path()
+        tibfib_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, TIBFIB_LEFT_FILENAME)
+        self._save_vtp(tibfib.gf, tibfib_vtp_fn)
+        osim_pelvis.setDisplayGeometryFileName(tibfib_vtp_fn, TIBFIB_LEFT_FILENAME)
+
+    def write_cust_osim_model(self):
+        self.osimmodel.save(
+            os.path.join(self.config['osim_output_dir'], TEMPLATE_OSIM_FILENAME)
             )
