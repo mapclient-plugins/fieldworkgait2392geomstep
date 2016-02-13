@@ -15,6 +15,7 @@ from gias2.musculoskeletal import osim
 
 import opensim
 
+#=============================================================================#
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 TEMPLATE_OSIM_PATH = os.path.join(SELF_DIR, 'data/gait2392_simbody.osim')
 OSIM_FILENAME = 'gait2392_simbody.osim'
@@ -39,10 +40,39 @@ SACRUM_FILENAME = 'sacrum.vtp'
 HEMIPELVIS_RIGHT_FILENAME = 'pelvis.vtp'
 HEMIPELVIS_LEFT_FILENAME = 'l_pelvis.vtp'
 FEMUR_LEFT_FILENAME = 'l_femur.vtp'
-TIBFIB_LEFT_FILENAME = 'l_tibia.vtp'
+TIBIA_LEFT_FILENAME = 'l_tibia.vtp'
+FIBULA_LEFT_FILENAME = 'l_fibula.vtp'
 
+#=============================================================================#
+# Opensim coordinate systems for bodies
+
+def update_femur_opensim_acs(femur_model):
+    femur_model.acs.update(
+        *bonemodels.model_alignment.createFemurACSOpenSim(
+            femur_model.landmarks['femur-HC'],
+            femur_model.landmarks['femur-MEC'],
+            femur_model.landmarks['femur-LEC'],
+            side=femur_model.side
+            )
+        )
+bonemodels.FemurModel.update_acs = update_femur_opensim_acs
+
+def update_tibiafibula_opensim_acs(tibiafibula_model):
+    tibiafibula_model.acs.update(
+        *bonemodels.model_alignment.createTibiaFibulaACSOpenSim(
+            tibiafibula_model.landmarks['tibiafibula-MM'],
+            tibiafibula_model.landmarks['tibiafibula-LM'],
+            tibiafibula_model.landmarks['tibiafibula-MC'],
+            tibiafibula_model.landmarks['tibiafibula-LC'],
+            side=tibiafibula_model.side
+            )
+        )
+bonemodels.TibiaFibulaModel.update_acs = update_tibiafibula_opensim_acs
+
+#=============================================================================#
 class Gait2392GeomCustomiser(object):
     gfield_disc = (8,8)
+    convert_mm_to_m = True
 
     def __init__(self, config):
         self.config = config
@@ -84,6 +114,21 @@ class Gait2392GeomCustomiser(object):
                     PELVIS_BASISTYPES
                     )
         return lhgf, sacgf, rhgf
+
+    def _splitTibiaFibulaGFs(self):
+        tibfib = self.LL.models['tibiafibula'].gf
+        tib = tibfib.makeGFFromElements(
+                'tibia',
+                TIBFIB_SUBMESH_ELEMS['tibia'],
+                TIBFIB_BASISTYPES,
+                )
+        fib = tibfib.makeGFFromElements(
+                'fibula',
+                TIBFIB_SUBMESH_ELEMS['fibula'],
+                TIBFIB_BASISTYPES,
+                )
+
+        return tib, fib
 
     def _check_geom_path(self):
         """
@@ -202,6 +247,8 @@ class Gait2392GeomCustomiser(object):
     def _save_vtp(self, gf, filename, bodycoordmapper):
         v, f = gf.triangulate(self.gfield_disc)
         v_local = bodycoordmapper(v)
+        if self.convert_mm_to_m:
+            v_local *= 1e-3
         vtkwriter = vtktools.Writer(
                         v=v_local,
                         f=f,
@@ -229,20 +276,26 @@ class Gait2392GeomCustomiser(object):
         self._check_geom_path()
 
         ## sacrum.vtp
-        sac_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, SACRUM_FILENAME)
-        self._save_vtp(sacgf, sac_vtp_fn, pelvis.acs.map_local)
-        osim_pelvis.setDisplayGeometryFileName(sac_vtp_fn, SACRUM_FILENAME)
+        sac_vtp_full_path = os.path.join(self.config['osim_output_dir'], GEOM_DIR, SACRUM_FILENAME)
+        sac_vtp_osim_path = os.path.join(GEOM_DIR, SACRUM_FILENAME)
+        self._save_vtp(sacgf, sac_vtp_full_path, pelvis.acs.map_local)
+        # osim_pelvis.setDisplayGeometryFileName(sac_vtp_osim_path, SACRUM_FILENAME)
 
         ## pelvis.vtp
-        rh_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
-        self._save_vtp(rhgf, rh_vtp_fn, pelvis.acs.map_local)
-        osim_pelvis.setDisplayGeometryFileName(rh_vtp_fn, HEMIPELVIS_RIGHT_FILENAME)
+        rh_vtp_full_path = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
+        rh_vtp_osim_path = os.path.join(GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
+        self._save_vtp(rhgf, rh_vtp_full_path, pelvis.acs.map_local)
+        # osim_pelvis.setDisplayGeometryFileName(rh_vtp_osim_path, HEMIPELVIS_RIGHT_FILENAME)
 
         ## l_pelvis.vtp
-        lh_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_LEFT_FILENAME)
-        self._save_vtp(lhgf, lh_vtp_fn, pelvis.acs.map_local)
-        osim_pelvis.setDisplayGeometryFileName(lh_vtp_fn, HEMIPELVIS_LEFT_FILENAME)
+        lh_vtp_full_path = os.path.join(self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_LEFT_FILENAME)
+        lh_vtp_osim_path = os.path.join(GEOM_DIR, HEMIPELVIS_LEFT_FILENAME)
+        self._save_vtp(lhgf, lh_vtp_full_path, pelvis.acs.map_local)
+        # osim_pelvis.setDisplayGeometryFileName(lh_vtp_osim_path, HEMIPELVIS_LEFT_FILENAME)
 
+        osim_pelvis.setDisplayGeometryFileName(
+            [sac_vtp_osim_path, rh_vtp_osim_path, lh_vtp_osim_path]
+            )
 
     def cust_osim_femur_left(self):
         osim_femur = self.osimmodel.getBody(OSIM_BODY_NAME_MAP['femur'])
@@ -264,9 +317,11 @@ class Gait2392GeomCustomiser(object):
 
         # update mesh l_femur.vtp
         self._check_geom_path()
-        femur_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, FEMUR_LEFT_FILENAME)
-        self._save_vtp(femur.gf, femur_vtp_fn, femur.acs.map_local)
-        osim_femur.setDisplayGeometryFileName(femur_vtp_fn, FEMUR_LEFT_FILENAME)
+        femur_vtp_full_path = os.path.join(self.config['osim_output_dir'], GEOM_DIR, FEMUR_LEFT_FILENAME)
+        femur_vtp_osim_path = os.path.join(GEOM_DIR, FEMUR_LEFT_FILENAME)
+        self._save_vtp(femur.gf, femur_vtp_full_path, femur.acs.map_local)
+        # osim_femur.setDisplayGeometryFileName(femur_vtp_osim_path, FEMUR_LEFT_FILENAME)
+        osim_femur.setDisplayGeometryFileName([femur_vtp_osim_path,])
 
     def cust_osim_tibiafibula_left(self):
         osim_tibfib = self.osimmodel.getBody(OSIM_BODY_NAME_MAP['tibiafibula'])
@@ -277,13 +332,42 @@ class Gait2392GeomCustomiser(object):
 
         ## location in self
 
+         # update mesh
+        tibgf, fibgf = self._splitTibiaFibulaGFs()
+        self._check_geom_path()
+
         # update mesh l_tibia.vtp
         self._check_geom_path()
-        tibfib_vtp_fn = os.path.join(self.config['osim_output_dir'], GEOM_DIR, TIBFIB_LEFT_FILENAME)
-        self._save_vtp(tibfib.gf, tibfib_vtp_fn, tibfib.acs.map_local)
-        osim_tibfib.setDisplayGeometryFileName(tibfib_vtp_fn, TIBFIB_LEFT_FILENAME)
+        tib_vtp_full_path = os.path.join(
+            self.config['osim_output_dir'],
+            GEOM_DIR,
+            TIBIA_LEFT_FILENAME
+            )
+        tib_vtp_osim_path = os.path.join(
+            GEOM_DIR,
+            TIBIA_LEFT_FILENAME
+            )
+        self._save_vtp(tibgf, tib_vtp_full_path, tibfib.acs.map_local)
+        # osim_tibfib.setDisplayGeometryFileName(tib_vtp_osim_path, TIBIA_LEFT_FILENAME)
+
+        # update mesh l_fibula.vtp
+        fib_vtp_full_path = os.path.join(
+            self.config['osim_output_dir'],
+            GEOM_DIR,
+            FIBULA_LEFT_FILENAME
+            )
+        fib_vtp_osim_path = os.path.join(
+            GEOM_DIR,
+            FIBULA_LEFT_FILENAME
+            )
+        self._save_vtp(fibgf, fib_vtp_full_path, tibfib.acs.map_local)
+        # osim_tibfib.setDisplayGeometryFileName(fib_vtp_osim_path, FIBULA_LEFT_FILENAME)
+        
+        osim_tibfib.setDisplayGeometryFileName(
+            [tib_vtp_osim_path, fib_vtp_osim_path]
+            )
 
     def write_cust_osim_model(self):
         self.osimmodel.save(
-            os.path.join(self.config['osim_output_dir'], TEMPLATE_OSIM_FILENAME)
+            os.path.join(self.config['osim_output_dir'], OSIM_FILENAME)
             )

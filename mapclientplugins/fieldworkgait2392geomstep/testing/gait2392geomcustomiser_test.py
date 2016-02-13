@@ -58,4 +58,10 @@ cust.cust_osim_pelvis()
 cust.cust_osim_femur_left()
 cust.cust_osim_tibiafibula_left()
 
+print('writing')
+# write out customised osim file
+cust.write_cust_osim_model()
 
+pelvis=cust.osimmodel.getBody('pelvis')
+pd = pelvis._osimBody.getDisplayer()
+gs = pd.getGeometrySet()
