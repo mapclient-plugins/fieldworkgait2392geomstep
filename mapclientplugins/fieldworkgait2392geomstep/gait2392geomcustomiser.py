@@ -48,28 +48,28 @@ FIBULA_LEFT_FILENAME = 'l_fibula.vtp'
 #=============================================================================#
 # Opensim coordinate systems for bodies
 
-# def update_femur_opensim_acs(femur_model):
-#     femur_model.acs.update(
-#         *bonemodels.model_alignment.createFemurACSOpenSim(
-#             femur_model.landmarks['femur-HC'],
-#             femur_model.landmarks['femur-MEC'],
-#             femur_model.landmarks['femur-LEC'],
-#             side=femur_model.side
-#             )
-#         )
-# bonemodels.FemurModel.update_acs = update_femur_opensim_acs
+def update_femur_opensim_acs(femur_model):
+    femur_model.acs.update(
+        *bonemodels.model_alignment.createFemurACSOpenSim(
+            femur_model.landmarks['femur-HC'],
+            femur_model.landmarks['femur-MEC'],
+            femur_model.landmarks['femur-LEC'],
+            side=femur_model.side
+            )
+        )
+bonemodels.FemurModel.update_acs = update_femur_opensim_acs
 
-# def update_tibiafibula_opensim_acs(tibiafibula_model):
-#     tibiafibula_model.acs.update(
-#         *bonemodels.model_alignment.createTibiaFibulaACSOpenSim(
-#             tibiafibula_model.landmarks['tibiafibula-MM'],
-#             tibiafibula_model.landmarks['tibiafibula-LM'],
-#             tibiafibula_model.landmarks['tibiafibula-MC'],
-#             tibiafibula_model.landmarks['tibiafibula-LC'],
-#             side=tibiafibula_model.side
-#             )
-#         )
-# bonemodels.TibiaFibulaModel.update_acs = update_tibiafibula_opensim_acs
+def update_tibiafibula_opensim_acs(tibiafibula_model):
+    tibiafibula_model.acs.update(
+        *bonemodels.model_alignment.createTibiaFibulaACSOpenSim(
+            tibiafibula_model.landmarks['tibiafibula-MM'],
+            tibiafibula_model.landmarks['tibiafibula-LM'],
+            tibiafibula_model.landmarks['tibiafibula-MC'],
+            tibiafibula_model.landmarks['tibiafibula-LC'],
+            side=tibiafibula_model.side
+            )
+        )
+bonemodels.TibiaFibulaModel.update_acs = update_tibiafibula_opensim_acs
 
 def _splitTibiaFibulaGFs(tibfibGField):
     tib = tibfibGField.makeGFFromElements(
@@ -109,7 +109,7 @@ def _splitPelvisGFs(pelvisGField):
 
 #=============================================================================#
 class Gait2392GeomCustomiser(object):
-    gfield_disc = (8,8)
+    gfield_disc = (4,4)
     convert_mm_to_m = True
 
     def __init__(self, config):
@@ -329,7 +329,10 @@ class Gait2392GeomCustomiser(object):
 
         # update mesh l_femur.vtp
         self._check_geom_path()
-        femur_vtp_full_path = os.path.join(self.config['osim_output_dir'], GEOM_DIR, FEMUR_LEFT_FILENAME)
+        femur_vtp_full_path = os.path.join(
+            self.config['osim_output_dir'],
+            GEOM_DIR, FEMUR_LEFT_FILENAME
+            )
         femur_vtp_osim_path = os.path.join(GEOM_DIR, FEMUR_LEFT_FILENAME)
         self._save_vtp(femur.gf, femur_vtp_full_path, femur.acs.map_local)
         osim_femur.setDisplayGeometryFileName([femur_vtp_osim_path,])
@@ -337,12 +340,21 @@ class Gait2392GeomCustomiser(object):
     def cust_osim_tibiafibula_left(self):
         tibfib = self.LL.models['tibiafibula']
         femur = self.LL.models['femur']
-        osim_tibfib = self.osimmodel.bodies[OSIM_BODY_NAME_MAP['tibiafibula-left']]
+        osim_tibfib = self.osimmodel.bodies[
+                        OSIM_BODY_NAME_MAP['tibiafibula-left']
+                        ]
 
         # update knee_l joint
         kjc = 0.5*(femur.landmarks['femur-MEC'] + femur.landmarks['femur-LEC'])
-        self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(kjc[np.newaxis])[0]
-        self.osimmodel.joints['knee_l'].location = tibfib.acs.map_local(kjc[np.newaxis])[0]
+        # self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(
+        #     kjc[np.newaxis]
+        #     )[0] #- [0, -3.74557519e+02, 0]
+
+        # not sure why, the femur origin is in the head, so the knee centre should not be 0,0,0
+        self.osimmodel.joints['knee_l'].locationInParent = [0,0,0] 
+        self.osimmodel.joints['knee_l'].location = tibfib.acs.map_local(
+            kjc[np.newaxis]
+            )[0]
         if self.convert_mm_to_m:
             self.osimmodel.joints['knee_l'].locationInParent *= 1e-3
             self.osimmodel.joints['knee_l'].location *= 1e-3
@@ -379,6 +391,20 @@ class Gait2392GeomCustomiser(object):
         osim_tibfib.setDisplayGeometryFileName(
             [tib_vtp_osim_path, fib_vtp_osim_path]
             )
+
+    def cust_osim_ankle_left(self):
+        tibfib = self.LL.models['tibiafibula']
+
+        # very rough/bad estimate
+        ankle_centre = 0.5*(tibfib.landmarks['tibiafibula-MM'] + tibfib.landmarks['tibiafibula-LM'])
+        self.osimmodel.joints['ankle_l'].locationInParent = tibfib.acs.map_local(
+                                                                ankle_centre[np.newaxis]
+                                                                )[0] 
+        self.osimmodel.joints['ankle_l'].location = [0,0,0]
+        if self.convert_mm_to_m:
+            self.osimmodel.joints['ankle_l'].locationInParent *= 1e-3
+            self.osimmodel.joints['ankle_l'].location *= 1e-3
+
 
     def write_cust_osim_model(self):
         self.osimmodel.save(

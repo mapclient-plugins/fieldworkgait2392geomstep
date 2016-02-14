@@ -59,6 +59,7 @@ cust.set_left_lowerlimb_gfields(inputModelDict)
 cust.cust_osim_pelvis()
 cust.cust_osim_femur_left()
 cust.cust_osim_tibiafibula_left()
+cust.cust_osim_ankle_left()
 
 print('writing')
 # write out customised osim file
