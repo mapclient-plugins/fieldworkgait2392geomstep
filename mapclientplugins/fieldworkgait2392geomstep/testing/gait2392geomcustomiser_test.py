@@ -42,7 +42,9 @@ LL.bone_files = _boneModelFilenamesLeft
 LL.combined_pcs_filename = _shapeModelFilenameLeft
 LL.load_bones()
 LL.update_all_models([1.0,],[0,], [0,0,0,0,0,0], [0.0,0,0],[-0.0])
-LLOutputModelDict = _outputModelDict(LL)
+inputModelDict = _outputModelDict(LL)
+# inputModelDict['femur-left'] = inputModelDict['femur']
+# inputModelDict['tibiafibula-left'] = inputModelDict['tibiafibula']
 
 # test config file
 output_dir = str(os.path.join(os.path.split(__file__)[0], 'output/'))
@@ -51,7 +53,7 @@ config = {'osim_output_dir': output_dir,
 
 # instantiate customiser
 cust = g23.Gait2392GeomCustomiser(config)
-cust.set_model_gfields(LLOutputModelDict)
+cust.set_left_lowerlimb_gfields(inputModelDict)
 
 # customise each bone
 cust.cust_osim_pelvis()
@@ -62,6 +64,6 @@ print('writing')
 # write out customised osim file
 cust.write_cust_osim_model()
 
-pelvis=cust.osimmodel.getBody('pelvis')
+pelvis=cust.osimmodel.bodies['pelvis']
 pd = pelvis._osimBody.getDisplayer()
 gs = pd.getGeometrySet()
