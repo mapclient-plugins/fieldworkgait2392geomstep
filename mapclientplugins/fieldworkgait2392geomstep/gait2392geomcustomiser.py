@@ -5,6 +5,7 @@ import os
 import numpy as np
 import copy
 
+from gias2.common import transform3D
 from gias2.fieldwork.field import geometric_field
 from gias2.mesh import vtktools
 from gias2.musculoskeletal import mocap_landmark_preprocess
@@ -12,6 +13,8 @@ from gias2.musculoskeletal.bonemodels import bonemodels
 from gias2.musculoskeletal.bonemodels import lowerlimbatlasfit
 from gias2.musculoskeletal.bonemodels import lowerlimbatlasfitscaling
 from gias2.musculoskeletal import osim
+
+from transforms3d.euler import mat2euler
 
 import opensim
 
@@ -106,6 +109,53 @@ def _splitPelvisGFs(pelvisGField):
                 PELVIS_BASISTYPES
                 )
     return lhgf, sacgf, rhgf
+
+def calc_pelvis_ground_angles(ll):
+    """
+    returns pelvis tilt, list, rotation relative to ground
+    """
+    globalCS = np.array(
+        [[0,0,0],
+         [0,0,1],
+         [1,0,0],
+         [0,1,0],
+         ])
+    pelvisACS = ll.models['pelvis'].acs.unit_array
+    # calc rotation matrix mapping pelvis ACS to femur ACS
+    R = transform3D.directAffine(globalCS, pelvisACS)[:3,:3]
+
+    # calculate euler angles from rotation matrix 
+    _list, tilt, rot = mat2euler(R, 'szxy')
+
+    return tilt, _list, rot
+
+def calc_hip_angles(ll):
+    """
+    returns hip flexion, adduction, rotation
+    """
+    pelvisACS = ll.models['pelvis'].acs.unit_array
+    femurACS = ll.models['femur'].acs.unit_array
+    # calc rotation matrix mapping pelvis ACS to femur ACS
+    R = transform3D.directAffine(pelvisACS, femurACS)[:3,:3]
+
+    # calculate euler angles from rotation matrix 
+    add, flex, rot = mat2euler(R, 'szxy')
+
+    return flex, rot, add
+
+def calc_knee_angles(ll):
+    """
+    returns knee flexion, adduction, rotation
+    """
+    femurACS = ll.models['femur'].acs.unit_array
+    tibfibACS = ll.models['tibiafibula'].acs.unit_array
+    # calc rotation matrix mapping pelvis ACS to femur ACS
+    R = transform3D.directAffine(femurACS, tibfibACS)[:3,:3]
+
+    # calculate euler angles from rotation matrix 
+    rot, flex, add = mat2euler(R, 'szxy')
+
+    return flex, rot, add
 
 #=============================================================================#
 class Gait2392GeomCustomiser(object):
@@ -253,6 +303,7 @@ class Gait2392GeomCustomiser(object):
 
     def _save_vtp(self, gf, filename, bodycoordmapper):
         v, f = gf.triangulate(self.gfield_disc)
+        f = f[:,::-1]
         v_local = bodycoordmapper(v)
         if self.convert_mm_to_m:
             v_local *= 1e-3
@@ -277,11 +328,15 @@ class Gait2392GeomCustomiser(object):
             self.osimmodel.joints['ground_pelvis'].locationInParent *= 1e-3  
             self.osimmodel.joints['ground_pelvis'].location *= 1e-3  
 
-        ## pelvis_tilt
-
-        ## pelvis_list
-
-        ## pelvis_rotation
+        # update coordinate defaults
+        pelvis_ground_joint = self.osimmodel.joints['ground_pelvis']
+        tilt, _list, rot = calc_pelvis_ground_angles(self.LL)
+        ## tilt
+        pelvis_ground_joint.coordSets['pelvis_tilt'].defaultValue = tilt
+        ## list
+        pelvis_ground_joint.coordSets['pelvis_list'].defaultValue = _list
+        ## rotation
+        pelvis_ground_joint.coordSets['pelvis_rotation'].defaultValue = rot
 
         # update mesh
         lhgf, sacgf, rhgf = _splitPelvisGFs(self.LL.models['pelvis'].gf)
@@ -320,12 +375,14 @@ class Gait2392GeomCustomiser(object):
             self.osimmodel.joints['hip_l'].location *= 1e-3
 
         # update coordinate defaults
-
+        hip_joint = self.osimmodel.joints['hip_l']
+        flex, add, rot = calc_hip_angles(self.LL)
         ## hip_flexion_l
-
+        hip_joint.coordSets['hip_flexion_l'].defaultValue = flex
         ## hip_adduction_l
-
+        hip_joint.coordSets['hip_adduction_l'].defaultValue = add
         ## hip_rotation_l
+        hip_joint.coordSets['hip_rotation_l'].defaultValue = rot
 
         # update mesh l_femur.vtp
         self._check_geom_path()
@@ -352,12 +409,19 @@ class Gait2392GeomCustomiser(object):
 
         # not sure why, the femur origin is in the head, so the knee centre should not be 0,0,0
         self.osimmodel.joints['knee_l'].locationInParent = [0,0,0] 
+        # self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(kjc[np.newaxis])[0]
         self.osimmodel.joints['knee_l'].location = tibfib.acs.map_local(
             kjc[np.newaxis]
             )[0]
         if self.convert_mm_to_m:
             self.osimmodel.joints['knee_l'].locationInParent *= 1e-3
             self.osimmodel.joints['knee_l'].location *= 1e-3
+
+        # update coordinate defaults
+        knee_joint = self.osimmodel.joints['knee_l']
+        flex, add, rot = calc_knee_angles(self.LL)
+        ## hip_flexion_l
+        knee_joint.coordSets['knee_angle_l'].defaultValue = flex
 
          # update mesh
         tibgf, fibgf = _splitTibiaFibulaGFs(self.LL.models['tibiafibula'].gf)

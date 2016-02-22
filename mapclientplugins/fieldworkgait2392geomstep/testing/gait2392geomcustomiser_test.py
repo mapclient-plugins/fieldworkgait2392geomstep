@@ -41,7 +41,7 @@ LL = bonemodels.LowerLimbLeftAtlas('lower_limb_left')
 LL.bone_files = _boneModelFilenamesLeft
 LL.combined_pcs_filename = _shapeModelFilenameLeft
 LL.load_bones()
-LL.update_all_models([1.0,],[0,], [0,0,0,0,0,0], [0.0,0,0],[-0.0])
+LL.update_all_models([1.0,],[0,], [0,0,0,0,0,0], [0.0,0.0,np.pi/4],[0])
 inputModelDict = _outputModelDict(LL)
 # inputModelDict['femur-left'] = inputModelDict['femur']
 # inputModelDict['tibiafibula-left'] = inputModelDict['tibiafibula']
@@ -65,6 +65,6 @@ print('writing')
 # write out customised osim file
 cust.write_cust_osim_model()
 
-pelvis=cust.osimmodel.bodies['pelvis']
-pd = pelvis._osimBody.getDisplayer()
-gs = pd.getGeometrySet()
+
+knee_angles = g23.calc_knee_angles(cust.LL)
+print(knee_angles)
