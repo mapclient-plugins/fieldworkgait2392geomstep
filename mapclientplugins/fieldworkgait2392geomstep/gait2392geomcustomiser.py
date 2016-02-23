@@ -399,7 +399,7 @@ class Gait2392GeomCustomiser(object):
 
     def write_cust_osim_model(self):
         self.osimmodel.save(
-            os.path.join(self.config['osim_output_dir'], OSIM_FILENAME)
+            os.path.join(str(self.config['osim_output_dir']), OSIM_FILENAME)
             )
 
     def customise(self):
