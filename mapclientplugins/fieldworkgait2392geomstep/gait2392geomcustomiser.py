@@ -127,7 +127,7 @@ def calc_pelvis_ground_angles(ll):
     # calculate euler angles from rotation matrix 
     _list, tilt, rot = mat2euler(R, 'szxy')
 
-    return tilt, _list, rot
+    return -tilt, -_list, -rot
 
 def calc_hip_angles(ll):
     """
@@ -141,7 +141,7 @@ def calc_hip_angles(ll):
     # calculate euler angles from rotation matrix 
     add, flex, rot = mat2euler(R, 'szxy')
 
-    return flex, rot, add
+    return -flex, -rot, -add
 
 def calc_knee_angles(ll):
     """
@@ -155,11 +155,11 @@ def calc_knee_angles(ll):
     # calculate euler angles from rotation matrix 
     rot, flex, add = mat2euler(R, 'szxy')
 
-    return flex, rot, add
+    return -flex, -rot, -add
 
 #=============================================================================#
 class Gait2392GeomCustomiser(object):
-    gfield_disc = (4,4)
+    gfield_disc = (6,6)
 
     def __init__(self, config):
         self.config = config
@@ -295,9 +295,9 @@ class Gait2392GeomCustomiser(object):
         # update coordinate defaults
         hip_joint = self.osimmodel.joints['hip_l']
         if self.ll_transform is None:
-            flex, add, rot = calc_hip_angles(self.LL)
+            flex, rot, add = calc_hip_angles(self.LL)
         else:
-            flex, rot, add = self.ll_transform.hipRot
+            flex, rot, add = -1.0*self.ll_transform.hipRot
         ## hip_flexion_l
         hip_joint.coordSets['hip_flexion_l'].defaultValue = flex
         ## hip_adduction_l
@@ -324,13 +324,17 @@ class Gait2392GeomCustomiser(object):
 
         # update knee_l joint
         kjc = 0.5*(femur.landmarks['femur-MEC'] + femur.landmarks['femur-LEC'])
+        tpc = 0.5*(tibfib.landmarks['tibiafibula-MC'] + tibfib.landmarks['tibiafibula-LC'])
+        _d = -np.sqrt(((kjc - tpc)**2.0).sum())
         # self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(
         #     kjc[np.newaxis]
         #     )[0] #- [0, -3.74557519e+02, 0]
 
         # not sure why, the femur origin is in the head, so the knee centre should not be 0,0,0
-        self.osimmodel.joints['knee_l'].locationInParent = [0,0,0] 
-        # self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(kjc[np.newaxis]).squeeze()
+        # self.osimmodel.joints['knee_l'].locationInParent = [0,0,0] 
+        kjc_femur = femur.acs.map_local(kjc[np.newaxis]).squeeze()
+        kjc_femur[1] = -15 #_d
+        self.osimmodel.joints['knee_l'].locationInParent = kjc_femur
         self.osimmodel.joints['knee_l'].location = tibfib.acs.map_local(
                                                     kjc[np.newaxis]
                                                     ).squeeze()
@@ -343,9 +347,9 @@ class Gait2392GeomCustomiser(object):
         
         knee_joint = self.osimmodel.joints['knee_l']
         if self.ll_transform is None:
-            flex, add, rot = calc_knee_angles(self.LL)
+            flex, rot, add = calc_knee_angles(self.LL)
         else:
-            flex, rot, add = self.ll_transform._kneeRot
+            flex, rot, add = -1.0*self.ll_transform._kneeRot
         ## hip_flexion_l
         knee_joint.coordSets['knee_angle_l'].defaultValue = flex
         
@@ -391,7 +395,7 @@ class Gait2392GeomCustomiser(object):
         self.osimmodel.joints['ankle_l'].locationInParent = tibfib.acs.map_local(
                                                                 ankle_centre[np.newaxis]
                                                                 ).squeeze()
-        self.osimmodel.joints['ankle_l'].location = [0,0.10,0]
+        self.osimmodel.joints['ankle_l'].location = [0,10,0]
         if self.config['convert_mm_to_m']:
             self.osimmodel.joints['ankle_l'].locationInParent *= 1e-3
             self.osimmodel.joints['ankle_l'].location *= 1e-3
