@@ -107,7 +107,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         
         if dlg.exec_():
             self._config = dlg.getConfig()
-            self._data.config = self._config
+            self._g2392Cust.config = self._config
         
         self._configured = dlg.validate()
         self._configuredObserver()

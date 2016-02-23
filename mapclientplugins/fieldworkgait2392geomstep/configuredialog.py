@@ -142,9 +142,9 @@ class ConfigureDialog(QtGui.QDialog):
 
     def _osimOutputDirClicked(self):
         location = QtGui.QFileDialog.getExistingDirectory(self, 'Select Directory', self._previousOsimOutputDir)
-        if location[0]:
-            self._previousOsimOutputDir = location[0]
-            self._ui.lineEdit_osim_output_dir.setText(location[0])
+        if location:
+            self._previousOsimOutputDir = location
+            self._ui.lineEdit_osim_output_dir.setText(location)
 
     def _osimOutputDirEdited(self):
         self.validate()
