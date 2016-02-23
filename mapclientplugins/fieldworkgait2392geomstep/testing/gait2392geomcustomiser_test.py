@@ -56,7 +56,10 @@ llt.kneeRot = ll_params[4]
 
 # test config file
 output_dir = str(os.path.join(os.path.split(__file__)[0], 'output/'))
-config = {'osim_output_dir': output_dir,  
+config = {'osim_output_dir': output_dir,
+          'convert_mm_to_m': True,
+          'scale_other_bodies': False,
+          'write_osim_file': True,
           }
 
 # instantiate customiser
@@ -65,14 +68,15 @@ cust.set_left_lowerlimb_gfields(inputModelDict)
 cust.ll_transform = llt
 
 # customise each bone
-cust.cust_osim_pelvis()
-cust.cust_osim_femur_left()
-cust.cust_osim_tibiafibula_left()
-cust.cust_osim_ankle_left()
+# cust.cust_osim_pelvis()
+# cust.cust_osim_femur_left()
+# cust.cust_osim_tibiafibula_left()
+# cust.cust_osim_ankle_left()
+cust.customise()
 
-print('writing')
+# print('writing')
 # write out customised osim file
-cust.write_cust_osim_model()
+# cust.write_cust_osim_model()
 
 
 knee_angles = g23.calc_knee_angles(cust.LL)

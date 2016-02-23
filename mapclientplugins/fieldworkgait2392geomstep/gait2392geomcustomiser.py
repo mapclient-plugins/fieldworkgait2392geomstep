@@ -195,10 +195,16 @@ class Gait2392GeomCustomiser(object):
         """
 
         self.LL = bonemodels.LowerLimbLeftAtlas('left lower limb')
-        for gname, g in gfieldsdict.items():
-            self.LL.set_bone_gfield(gname, g)
-            self.LL.models[gname].update_acs()
+        self.LL.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
+        self.LL.set_bone_gfield('femur', gfieldsdict['femur'])
+        self.LL.set_bone_gfield('patella', gfieldsdict['patella'])
+        self.LL.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula'])
 
+        # for gname, g in gfieldsdict.items():
+        #     self.LL.set_bone_gfield(gname, g)
+        #     self.LL.models[gname].update_acs()
+
+        self.LL.models['pelvis'].update_acs()
         update_femur_opensim_acs(self.LL.models['femur'])
         update_tibiafibula_opensim_acs(self.LL.models['tibiafibula'])
 
