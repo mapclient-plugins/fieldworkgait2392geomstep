@@ -66,7 +66,7 @@ class ConfigureDialog(QtGui.QDialog):
             self._ui.lineEdit_id.setStyleSheet(INVALID_STYLE_SHEET)
 
         osimOutputDirValid = os.path.exists(self._ui.lineEdit_osim_output_dir.text())
-        if fileLocValid:
+        if osimOutputDirValid:
             self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET)
         else:
             self._ui.lineEdit_osim_output_dir.setStyleSheet(INVALID_STYLE_SHEET)
