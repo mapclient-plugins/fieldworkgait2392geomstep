@@ -17,6 +17,7 @@ setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
       install_requires=[
           'numpy',
           'scipy',
-          'mayavi[app]'.
+          'mayavi[app]',
+          'transforms3d',
       ],
       )

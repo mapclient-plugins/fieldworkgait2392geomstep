@@ -60,7 +60,7 @@ def update_femur_opensim_acs(femur_model):
             side=femur_model.side
             )
         )
-bonemodels.FemurModel.update_acs = update_femur_opensim_acs
+# bonemodels.FemurModel.update_acs = update_femur_opensim_acs
 
 def update_tibiafibula_opensim_acs(tibiafibula_model):
     tibiafibula_model.acs.update(
@@ -72,7 +72,7 @@ def update_tibiafibula_opensim_acs(tibiafibula_model):
             side=tibiafibula_model.side
             )
         )
-bonemodels.TibiaFibulaModel.update_acs = update_tibiafibula_opensim_acs
+# bonemodels.TibiaFibulaModel.update_acs = update_tibiafibula_opensim_acs
 
 def _splitTibiaFibulaGFs(tibfibGField):
     tib = tibfibGField.makeGFFromElements(
@@ -160,10 +160,10 @@ def calc_knee_angles(ll):
 #=============================================================================#
 class Gait2392GeomCustomiser(object):
     gfield_disc = (4,4)
-    convert_mm_to_m = True
 
     def __init__(self, config):
         self.config = config
+        self.ll_transform = None
         self._pelvisRigid = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         self._hipRot = np.array([0.0, 0.0, 0.0])
         self._kneeRot = np.array([0.0, 0.0, 0.0])
@@ -198,6 +198,10 @@ class Gait2392GeomCustomiser(object):
         for gname, g in gfieldsdict.items():
             self.LL.set_bone_gfield(gname, g)
             self.LL.models[gname].update_acs()
+
+        update_femur_opensim_acs(self.LL.models['femur'])
+        update_tibiafibula_opensim_acs(self.LL.models['tibiafibula'])
+
         # self.LL.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
         # self.LL.set_bone_gfield('femur-left', gfieldsdict['femur-left'])
         # self.LL.set_bone_gfield('femur-left', gfieldsdict['femur-left'])
@@ -206,106 +210,11 @@ class Gait2392GeomCustomiser(object):
         # self.LL.set_bone_gfield('tibiafibula-left', gfieldsdict['tibiafibula-left'])
         # self.LL.set_bone_gfield('tibiafibula-right', gfieldsdict['tibiafibula-right'])
 
-    @property
-    def pelvisRigid(self):
-        return self._pelvisRigid
-
-    @pelvisRigid.setter
-    def pelvisRigid(self, value):
-        if len(value)!=6:
-            raise ValueError('input pelvisRigid vector not of length 6')
-        else:
-            self._pelvisRigid = np.array([value[0], value[1], value[2],
-                                          _trimAngle(value[3]),
-                                          _trimAngle(value[4]),
-                                          _trimAngle(value[5]),
-                                         ])
-
-    @property
-    def hipRot(self):
-        return self._hipRot
-
-    @hipRot.setter
-    def hipRot(self, value):
-        if len(value)!=3:
-            raise ValueError('input hipRot vector not of length 3')
-        else:
-            self._hipRot = np.array([_trimAngle(v) for v in value])
-
-    @property
-    def kneeRot(self):
-        if self.kneeDOF:
-            return self._kneeRot[[0,2]]
-        else:
-            return self._kneeRot[[0]]
-
-    @kneeRot.setter
-    def kneeRot(self, value):
-        if self.kneeDOF:
-            self._kneeRot[0] = _trimAngle(value[0])
-            self._kneeRot[2] = _trimAngle(value[1])
-        else:
-            self._kneeRot[0] = _trimAngle(value[0])
-
-    @property
-    def uniformScalingX(self):
-        self._uniformScalingX = np.hstack([
-                                self.uniformScaling,
-                                self.pelvisRigid,
-                                self.hipRot,
-                                self.kneeRot
-                                ])
-        return self._uniformScalingX
-
-    @uniformScalingX.setter
-    def uniformScalingX(self, value):
-        print value
-        a = 1
-        self._uniformScalingX = value
-        self.uniformScaling = value[0]
-        self.pelvisRigid = value[1]
-        self.hipRot = value[2]
-        self.kneeRot = value[3]
-
-        # propagate isotropic scaling to each bone
-        self.pelvisScaling = self.uniformScaling
-        self.femurScaling = self.uniformScaling
-        self.patellaScaling = self.uniformScaling
-        self.tibfibScaling = self.uniformScaling
-
-        self.lastTransformSet = self.uniformScalingX
-
-    @property
-    def perBoneScalingX(self):
-        self._perBoneScalingX = np.hstack([
-                                self.pelvisScaling,
-                                self.femurScaling,
-                                self.patellaScaling,
-                                self.tibfibScaling,
-                                self.pelvisRigid,
-                                self.hipRot,
-                                self.kneeRot
-                                ])
-        return self._perBoneScalingX
-
-    @perBoneScalingX.setter
-    def perBoneScalingX(self, value):
-        a = 4
-        self._perBoneScalingX = value
-        self.pelvisScaling = value[0][1][0]
-        self.femurScaling = value[0][1][1]
-        self.patellaScaling = value[0][1][2]
-        self.tibfibScaling = value[0][1][3]
-        self.pelvisRigid = value[1]
-        self.hipRot = value[2]
-        self.kneeRot = value[3]
-        self.lastTransformSet = self.perBoneScalingX
-
     def _save_vtp(self, gf, filename, bodycoordmapper):
         v, f = gf.triangulate(self.gfield_disc)
-        f = f[:,::-1]
+        # f = f[:,::-1]
         v_local = bodycoordmapper(v)
-        if self.convert_mm_to_m:
+        if self.config['convert_mm_to_m']:
             v_local *= 1e-3
         vtkwriter = vtktools.Writer(
                         v=v_local,
@@ -324,13 +233,16 @@ class Gait2392GeomCustomiser(object):
         pelvis_origin = pelvis.acs.o  
         self.osimmodel.joints['ground_pelvis'].locationInParent = pelvis_origin # in ground CS
         self.osimmodel.joints['ground_pelvis'].location =  (0,0,0) # in pelvis CS
-        if self.convert_mm_to_m:
+        if self.config['convert_mm_to_m']:
             self.osimmodel.joints['ground_pelvis'].locationInParent *= 1e-3  
             self.osimmodel.joints['ground_pelvis'].location *= 1e-3  
 
         # update coordinate defaults
         pelvis_ground_joint = self.osimmodel.joints['ground_pelvis']
-        tilt, _list, rot = calc_pelvis_ground_angles(self.LL)
+        if self.ll_transform is None:
+            tilt, _list, rot = calc_pelvis_ground_angles(self.LL)
+        else:
+            tilt, _list, rot = self.ll_transform.pelvisRigid[3:]
         ## tilt
         pelvis_ground_joint.coordSets['pelvis_tilt'].defaultValue = tilt
         ## list
@@ -370,13 +282,16 @@ class Gait2392GeomCustomiser(object):
         lhjc = pelvis.landmarks['pelvis-LHJC']
         self.osimmodel.joints['hip_l'].locationInParent = pelvis.acs.map_local(lhjc[np.newaxis])[0]
         self.osimmodel.joints['hip_l'].location = femur.acs.map_local(lhjc[np.newaxis])[0]
-        if self.convert_mm_to_m:
+        if self.config['convert_mm_to_m']:
             self.osimmodel.joints['hip_l'].locationInParent *= 1e-3
             self.osimmodel.joints['hip_l'].location *= 1e-3
 
         # update coordinate defaults
         hip_joint = self.osimmodel.joints['hip_l']
-        flex, add, rot = calc_hip_angles(self.LL)
+        if self.ll_transform is None:
+            flex, add, rot = calc_hip_angles(self.LL)
+        else:
+            flex, rot, add = self.ll_transform.hipRot
         ## hip_flexion_l
         hip_joint.coordSets['hip_flexion_l'].defaultValue = flex
         ## hip_adduction_l
@@ -409,19 +324,25 @@ class Gait2392GeomCustomiser(object):
 
         # not sure why, the femur origin is in the head, so the knee centre should not be 0,0,0
         self.osimmodel.joints['knee_l'].locationInParent = [0,0,0] 
-        # self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(kjc[np.newaxis])[0]
+        # self.osimmodel.joints['knee_l'].locationInParent = femur.acs.map_local(kjc[np.newaxis]).squeeze()
         self.osimmodel.joints['knee_l'].location = tibfib.acs.map_local(
-            kjc[np.newaxis]
-            )[0]
-        if self.convert_mm_to_m:
+                                                    kjc[np.newaxis]
+                                                    ).squeeze()
+        if self.config['convert_mm_to_m']:
             self.osimmodel.joints['knee_l'].locationInParent *= 1e-3
             self.osimmodel.joints['knee_l'].location *= 1e-3
 
         # update coordinate defaults
+        # SKIP FOR NOW SINCE WE NEED SPLINE PARAMETERS TOO
+        
         knee_joint = self.osimmodel.joints['knee_l']
-        flex, add, rot = calc_knee_angles(self.LL)
+        if self.ll_transform is None:
+            flex, add, rot = calc_knee_angles(self.LL)
+        else:
+            flex, rot, add = self.ll_transform._kneeRot
         ## hip_flexion_l
         knee_joint.coordSets['knee_angle_l'].defaultValue = flex
+        
 
          # update mesh
         tibgf, fibgf = _splitTibiaFibulaGFs(self.LL.models['tibiafibula'].gf)
@@ -463,9 +384,9 @@ class Gait2392GeomCustomiser(object):
         ankle_centre = 0.5*(tibfib.landmarks['tibiafibula-MM'] + tibfib.landmarks['tibiafibula-LM'])
         self.osimmodel.joints['ankle_l'].locationInParent = tibfib.acs.map_local(
                                                                 ankle_centre[np.newaxis]
-                                                                )[0] 
-        self.osimmodel.joints['ankle_l'].location = [0,0,0]
-        if self.convert_mm_to_m:
+                                                                ).squeeze()
+        self.osimmodel.joints['ankle_l'].location = [0,0.10,0]
+        if self.config['convert_mm_to_m']:
             self.osimmodel.joints['ankle_l'].locationInParent *= 1e-3
             self.osimmodel.joints['ankle_l'].location *= 1e-3
 
@@ -474,3 +395,11 @@ class Gait2392GeomCustomiser(object):
         self.osimmodel.save(
             os.path.join(self.config['osim_output_dir'], OSIM_FILENAME)
             )
+
+    def customise(self):
+        self.cust_osim_pelvis()
+        self.cust_osim_femur_left()
+        self.cust_osim_tibiafibula_left()
+        self.cust_osim_ankle_left()
+        if self.config['write_osim_file']:
+            self.write_cust_osim_model()

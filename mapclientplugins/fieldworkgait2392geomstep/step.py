@@ -10,8 +10,7 @@ from PySide import QtGui
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.fieldworkgait2392geomstep.configuredialog import ConfigureDialog
 
-from mapclientplugins.fieldworkgait2392geomstep import llstep
-from mapclientplugins.fieldworkgait2392geomstep.fieldworkgait2392dialog import FieldworkGait2392GeomDialog
+from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import Gait2392GeomCustomiser
 
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 TEMPLATE_OSIM_FILENAME = os.path.join(SELF_DIR, 'data/gait2392_simbody.osim')
@@ -43,18 +42,23 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
                       'ju#fieldworkmodeldict'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
+                      'ju#lowerlimbtransform'))
+        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#osimmodel'))
 
         self._config = {}
         self._config['identifier'] = ''
-        self._config['GUI'] = 'True'
+        self._config['GUI'] = False
         self._config['scale_other_bodies'] = False
-        self._config
-        for l in LLLANDMARKS:
-            self._config[l] = ''
+        self._config['convert_mm_to_m'] = True
+        self._config['osim_output_dir'] = ''
+        self._config['write_osim_file'] = True
 
-        self._data = llstep.LLStepData(self._config)
+        self._g2392Cust = Gait2392GeomCustomiser(self._config)
+        self.inputModels = None
+        self.inputTransform = None
 
     def execute(self):
         '''
@@ -63,18 +67,9 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         may be connected up to a button in a widget for example.
         '''
         # Put your execute step code here before calling the '_doneExecution' method.
-        self._data.loadData()
-        self._data.updateFromConfig()
-        print('LL estimation configs:')
-        print self._data.config
-        if self._config['GUI']=='True':
-            # start gui
-            self._widget = LowerLimbGenerationDialog(self._data, self._doneExecution)
-            self._widget.setModal(True)
-            self._setCurrentWidget(self._widget)
-        else:
-            self._data.register()
-            self._doneExecution()
+        self._g2392Cust.set_left_lowerlimb_gfields(self.inputTransform)
+        self._g2392Cust.customise()
+        self._doneExecution()
 
     def setPortData(self, index, dataIn):
         '''
@@ -83,11 +78,10 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         uses port for this step then the index can be ignored.
         '''
         if index == 0:
-            self._data.inputLandmarks = dataIn # http://physiomeproject.org/workflow/1.0/rdf-schema#landmarks
-        elif index == 1:
-            self._data.inputPCs = dataIn # ju#principalcomponents
+            self.inputModels = dataIn # ju#fieldworkmodeldict
         else:
-            self._data.inputModelDict = dataIn # ju#fieldworkmodeldict
+            self.inputTransform = dataIn # ju#lowerlimbtransform
+            self._g2392Cust.ll_transform = self.inputTransform
 
     def getPortData(self, index):
         '''
@@ -95,10 +89,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         The index is the index of the port in the port list.  If there is only one
         provides port for this step then the index can be ignored.
         '''
-        if index == 3:
-            return self._data.outputModelDict
-        else:
-            return self._data.outputTransform
+        return self._g2392Cust.osimmodel
 
     def configure(self):
         '''

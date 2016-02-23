@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>602</width>
-    <height>606</height>
+    <width>597</width>
+    <height>255</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Configure Lower Limb Registration Step</string>
+   <string>Configure OpenSim Gait2392 Customisation Step</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -20,6 +20,9 @@
       <string/>
      </property>
      <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label0">
         <property name="text">
@@ -31,184 +34,81 @@
        <widget class="QLineEdit" name="lineEdit_id"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label1">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Registration Mode:</string>
+         <string>Output Directory:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Output .osim file:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="checkBox_write_osim_file">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>PCs to Fit:</string>
+         <string>Convert mm to m:</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QSpinBox" name="spinBox_pcsToFit">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>99</number>
+       <widget class="QCheckBox" name="checkBox_convert_mm_to_m">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Mahalanobis Weight:</string>
+         <string>Scale other bodies:</string>
         </property>
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_mWeight">
-        <property name="singleStep">
-         <double>0.100000000000000</double>
+       <widget class="QCheckBox" name="checkBox_scale_other_bodies">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
       <item row="5" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>RASIS:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>LASIS:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="lineEdit_RASIS"/>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLineEdit" name="lineEdit_LASIS"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="comboBox_regmode"/>
-      </item>
-      <item row="7" column="1">
-       <widget class="QLineEdit" name="lineEdit_Sacral"/>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Sacral:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Lateral Epicondyle:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QLineEdit" name="lineEdit_LEC"/>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Medial Epicondyle:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QLineEdit" name="lineEdit_MEC"/>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Lateral Malleolus:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="1">
-       <widget class="QLineEdit" name="lineEdit_LM"/>
-      </item>
-      <item row="11" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Medial Malleolus:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="1">
-       <widget class="QLineEdit" name="lineEdit_MM"/>
-      </item>
-      <item row="14" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Knee Options:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QCheckBox" name="checkBox_kneedof">
-          <property name="text">
-           <string>Abd. DOF</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBox_kneecorr">
-          <property name="text">
-           <string>Abd. Correction</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="15" column="0">
        <widget class="QLabel" name="label_11">
         <property name="text">
          <string>GUI:</string>
         </property>
        </widget>
       </item>
-      <item row="15" column="1">
+      <item row="5" column="1">
        <widget class="QCheckBox" name="checkBox_GUI">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>Marker Radius:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>Skin Padding:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_markerRadius"/>
-      </item>
-      <item row="13" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_skinPad"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_14">
-        <property name="text">
-         <string>Side:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="comboBox_side"/>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLineEdit" name="lineEdit_osim_output_dir"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_osim_output_dir">
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -227,21 +127,11 @@
  </widget>
  <tabstops>
   <tabstop>lineEdit_id</tabstop>
-  <tabstop>comboBox_regmode</tabstop>
-  <tabstop>comboBox_side</tabstop>
-  <tabstop>spinBox_pcsToFit</tabstop>
-  <tabstop>doubleSpinBox_mWeight</tabstop>
-  <tabstop>lineEdit_RASIS</tabstop>
-  <tabstop>lineEdit_LASIS</tabstop>
-  <tabstop>lineEdit_Sacral</tabstop>
-  <tabstop>lineEdit_LEC</tabstop>
-  <tabstop>lineEdit_MEC</tabstop>
-  <tabstop>lineEdit_LM</tabstop>
-  <tabstop>lineEdit_MM</tabstop>
-  <tabstop>doubleSpinBox_markerRadius</tabstop>
-  <tabstop>doubleSpinBox_skinPad</tabstop>
-  <tabstop>checkBox_kneedof</tabstop>
-  <tabstop>checkBox_kneecorr</tabstop>
+  <tabstop>lineEdit_osim_output_dir</tabstop>
+  <tabstop>pushButton_osim_output_dir</tabstop>
+  <tabstop>checkBox_write_osim_file</tabstop>
+  <tabstop>checkBox_convert_mm_to_m</tabstop>
+  <tabstop>checkBox_scale_other_bodies</tabstop>
   <tabstop>checkBox_GUI</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
