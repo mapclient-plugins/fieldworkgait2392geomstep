@@ -1,13 +1,10 @@
 
-
+import os
 from PySide import QtGui
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
 
 INVALID_STYLE_SHEET = 'background-color: rgba(239, 0, 0, 50)'
 DEFAULT_STYLE_SHEET = ''
-
-REG_MODES = ('shapemodel', 'uniformscaling', 'perbonescaling', 'manual')
-SIDEOPTIONS = ('left', 'right')
 
 class ConfigureDialog(QtGui.QDialog):
     '''
@@ -27,20 +24,17 @@ class ConfigureDialog(QtGui.QDialog):
         # and know how many occurrences of the current identifier there should
         # be.
         self._previousIdentifier = ''
+        self._previousOsimOutputDir = ''
         # Set a place holder for a callable that will get set from the step.
         # We will use this method to decide whether the identifier is unique.
         self.identifierOccursCount = None
 
         self._makeConnections()
 
-        for regmode in REG_MODES:
-            self._ui.comboBox_regmode.addItem(regmode)
-
-        for side in SIDEOPTIONS:
-            self._ui.comboBox_side.addItem(side)
-
     def _makeConnections(self):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
+        self._ui.lineEdit_osim_output_dir.textChanged.connect(self._osimOutputDirEdited)
+        self._ui.pushButton_osim_output_dir.clicked.connect(self._osimOutputDirClicked)
 
     def accept(self):
         '''
@@ -64,12 +58,21 @@ class ConfigureDialog(QtGui.QDialog):
         '''
         # Determine if the current identifier is unique throughout the workflow
         # The identifierOccursCount method is part of the interface to the workflow framework.
-        value = self.identifierOccursCount(self._ui.lineEdit_id.text())
-        valid = (value == 0) or (value == 1 and self._previousIdentifier == self._ui.lineEdit_id.text())
-        if valid:
+        idValue = self.identifierOccursCount(self._ui.lineEdit_id.text())
+        idValid = (idValue == 0) or (idValue == 1 and self._previousIdentifier == self._ui.lineEdit_id.text())
+        if idValid:
             self._ui.lineEdit_id.setStyleSheet(DEFAULT_STYLE_SHEET)
         else:
             self._ui.lineEdit_id.setStyleSheet(INVALID_STYLE_SHEET)
+
+        osimOutputDirValid = os.path.exists(self._ui.lineEdit_osim_output_dir.text())
+        if fileLocValid:
+            self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET)
+        else:
+            self._ui.lineEdit_osim_output_dir.setStyleSheet(INVALID_STYLE_SHEET)
+            
+        valid = idValid and osimOutputDirValid
+        self._ui.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(valid)
 
         return valid
 
@@ -82,31 +85,28 @@ class ConfigureDialog(QtGui.QDialog):
         self._previousIdentifier = self._ui.lineEdit_id.text()
         config = {}
         config['identifier'] = self._ui.lineEdit_id.text()
-        config['registration_mode'] = self._ui.comboBox_regmode.currentText()
-        config['side'] = self._ui.comboBox_side.currentText()
-        config['pcs_to_fit'] = str(self._ui.spinBox_pcsToFit.value())
-        config['mweight'] = str(self._ui.doubleSpinBox_mWeight.value())
-        config['pelvis-RASIS'] = self._ui.lineEdit_RASIS.text()
-        config['pelvis-LASIS'] = self._ui.lineEdit_LASIS.text()
-        config['pelvis-Sacral'] = self._ui.lineEdit_Sacral.text()
-        config['femur-LEC'] = self._ui.lineEdit_LEC.text()
-        config['femur-MEC'] = self._ui.lineEdit_MEC.text()
-        config['tibiafibula-LM'] = self._ui.lineEdit_LM.text()
-        config['tibiafibula-MM'] = self._ui.lineEdit_MM.text()
-        config['marker_radius'] = self._ui.doubleSpinBox_markerRadius.value()
-        config['skin_pad'] = self._ui.doubleSpinBox_skinPad.value()
-        if self._ui.checkBox_kneecorr.isChecked():
-            config['knee_corr'] = 'True'
+        config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
+        
+        if self._ui.checkBox_write_osim_file.isChecked():
+            config['write_osim_file'] = True
         else:
-            config['knee_corr'] = 'False'
-        if self._ui.checkBox_kneedof.isChecked():
-            config['knee_dof'] = 'True'
+            config['write_osim_file'] = False
+
+        if self._ui.checkBox_convert_mm_to_m.isChecked():
+            config['convert_mm_to_m'] = True
         else:
-            config['knee_dof'] = 'False'
+            config['convert_mm_to_m'] = False
+
+        if self._ui.checkBox_scale_other_bodies.isChecked():
+            config['scale_other_bodies'] = True
+        else:
+            config['scale_other_bodies'] = False
+
         if self._ui.checkBox_GUI.isChecked():
-            config['GUI'] = 'True'
+            config['GUI'] = True
         else:
-            config['GUI'] = 'False'
+            config['GUI'] = False
+
         return config
 
     def setConfig(self, config):
@@ -117,37 +117,34 @@ class ConfigureDialog(QtGui.QDialog):
         '''
         self._previousIdentifier = config['identifier']
         self._ui.lineEdit_id.setText(config['identifier'])
-        self._ui.comboBox_regmode.setCurrentIndex(
-            REG_MODES.index(config['registration_mode'])
-            )
-        if config.get('side'):
-            self._ui.comboBox_side.setCurrentIndex(
-                SIDEOPTIONS.index(config['side'])
-                )
-        else:
-            self._ui.comboBox_side.setCurrentIndex(0)
+        self._previousOsimOutputDir = config['osim_output_dir']
+        self._ui.lineEdit_osim_output_dir.setText(config['osim_output_dir'])
 
-        self._ui.spinBox_pcsToFit.setValue(int(config['pcs_to_fit']))
-        self._ui.doubleSpinBox_mWeight.setValue(float(config['mweight']))
-        self._ui.lineEdit_RASIS.setText(config['pelvis-RASIS'])
-        self._ui.lineEdit_LASIS.setText(config['pelvis-LASIS'])
-        self._ui.lineEdit_Sacral.setText(config['pelvis-Sacral'])
-        self._ui.lineEdit_LEC.setText(config['femur-LEC'])
-        self._ui.lineEdit_MEC.setText(config['femur-MEC'])
-        self._ui.lineEdit_MM.setText(config['tibiafibula-MM'])
-        self._ui.lineEdit_LM.setText(config['tibiafibula-LM'])
-        self._ui.doubleSpinBox_markerRadius.setValue(float(config['marker_radius']))
-        self._ui.doubleSpinBox_skinPad.setValue(float(config['skin_pad']))
-        if config['knee_corr']=='True':
-            self._ui.checkBox_kneecorr.setChecked(bool(True))
+        if config['write_osim_file']:
+            self._ui.checkBox_write_osim_file.setChecked(bool(True))
         else:
-            self._ui.checkBox_kneecorr.setChecked(bool(False))
-        if config['knee_dof']=='True':
-            self._ui.checkBox_kneedof.setChecked(bool(True))
+            self._ui.checkBox_write_osim_file.setChecked(bool(False))
+
+        if config['convert_mm_to_m']:
+            self._ui.checkBox_convert_mm_to_m.setChecked(bool(True))
         else:
-            self._ui.checkBox_kneedof.setChecked(bool(False))
-        if config['GUI']=='True':
+            self._ui.checkBox_convert_mm_to_m.setChecked(bool(False))
+
+        if config['scale_other_bodies']:
+            self._ui.checkBox_scale_other_bodies.setChecked(bool(True))
+        else:
+            self._ui.checkBox_scale_other_bodies.setChecked(bool(False))
+
+        if config['GUI']:
             self._ui.checkBox_GUI.setChecked(bool(True))
         else:
             self._ui.checkBox_GUI.setChecked(bool(False))
 
+    def _osimOutputDirClicked(self):
+        location = QtGui.QFileDialog.getExistingDirectory(self, 'Select Directory', self._previousOsimOutputDir)
+        if location[0]:
+            self._previousOsimOutputDir = location[0]
+            self._ui.lineEdit_osim_output_dir.setText(location[0])
+
+    def _osimOutputDirEdited(self):
+        self.validate()
