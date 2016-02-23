@@ -67,7 +67,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         may be connected up to a button in a widget for example.
         '''
         # Put your execute step code here before calling the '_doneExecution' method.
-        self._g2392Cust.set_left_lowerlimb_gfields(self.inputModel)
+        self._g2392Cust.set_left_lowerlimb_gfields(self.inputModels)
         self._g2392Cust.customise()
         self._doneExecution()
 
