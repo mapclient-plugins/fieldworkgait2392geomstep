@@ -1,7 +1,27 @@
+"""
+MAP Client, a program to generate detailed musculoskeletal models for OpenSim.
+    Copyright (C) 2012  University of Auckland
+    
+This file is part of MAP Client. (http://launchpad.net/mapclient)
 
-'''
-MAP Client Plugin Step
-'''
+    MAP Client is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    MAP Client is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with MAP Client.  If not, see <http://www.gnu.org/licenses/>..
+"""
+
+"""
+OpenSim Gait2392 bodies customisation
+"""
+
 import os
 import json
 
@@ -52,9 +72,11 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config['identifier'] = ''
         self._config['GUI'] = False
         self._config['scale_other_bodies'] = False
-        self._config['convert_mm_to_m'] = True
+        self._config['in_unit'] = 'mm'
+        self._config['out_unit'] = 'm'
         self._config['osim_output_dir'] = ''
         self._config['write_osim_file'] = True
+        self._config['side'] = 'left'
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)
         self.inputModels = None
@@ -67,7 +89,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         may be connected up to a button in a widget for example.
         '''
         # Put your execute step code here before calling the '_doneExecution' method.
-        self._g2392Cust.set_left_lowerlimb_gfields(self.inputModels)
+        self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
         self._g2392Cust.customise()
         self._doneExecution()
 

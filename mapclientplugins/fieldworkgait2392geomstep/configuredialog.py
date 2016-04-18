@@ -2,6 +2,7 @@
 import os
 from PySide import QtGui
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
+from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS, SIDES
 
 INVALID_STYLE_SHEET = 'background-color: rgba(239, 0, 0, 50)'
 DEFAULT_STYLE_SHEET = ''
@@ -29,7 +30,15 @@ class ConfigureDialog(QtGui.QDialog):
         # We will use this method to decide whether the identifier is unique.
         self.identifierOccursCount = None
 
+        self._setupDialog()
         self._makeConnections()
+
+    def _setupDialog(self):
+        for s in VALID_UNITS:
+            self._ui.comboBox_in_unit.addItem(s)
+            self._ui.comboBox_out_unit.addItem(s)
+        for s in SIDES:
+            self._ui.comboBox_side.addItem(s)
 
     def _makeConnections(self):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
@@ -86,16 +95,14 @@ class ConfigureDialog(QtGui.QDialog):
         config = {}
         config['identifier'] = self._ui.lineEdit_id.text()
         config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
-        
+        config['in_unit'] = self._ui.comboBox_in_unit.currentText()
+        config['out_unit'] = self._ui.comboBox_out_unit.currentText()
+        config['side'] = self._ui.comboBox_side.currentText()
+
         if self._ui.checkBox_write_osim_file.isChecked():
             config['write_osim_file'] = True
         else:
             config['write_osim_file'] = False
-
-        if self._ui.checkBox_convert_mm_to_m.isChecked():
-            config['convert_mm_to_m'] = True
-        else:
-            config['convert_mm_to_m'] = False
 
         if self._ui.checkBox_scale_other_bodies.isChecked():
             config['scale_other_bodies'] = True
@@ -120,15 +127,26 @@ class ConfigureDialog(QtGui.QDialog):
         self._previousOsimOutputDir = config['osim_output_dir']
         self._ui.lineEdit_osim_output_dir.setText(config['osim_output_dir'])
 
+        self._ui.comboBox_in_unit.setCurrentIndex(
+            VALID_UNITS.index(
+                config['in_unit']
+                )
+            )
+        self._ui.comboBox_out_unit.setCurrentIndex(
+            VALID_UNITS.index(
+                config['out_unit']
+                )
+            )
+        self._ui.comboBox_side.setCurrentIndex(
+            SIDES.index(
+                config['side']
+                )
+            )
+
         if config['write_osim_file']:
             self._ui.checkBox_write_osim_file.setChecked(bool(True))
         else:
             self._ui.checkBox_write_osim_file.setChecked(bool(False))
-
-        if config['convert_mm_to_m']:
-            self._ui.checkBox_convert_mm_to_m.setChecked(bool(True))
-        else:
-            self._ui.checkBox_convert_mm_to_m.setChecked(bool(False))
 
         if config['scale_other_bodies']:
             self._ui.checkBox_scale_other_bodies.setChecked(bool(True))
