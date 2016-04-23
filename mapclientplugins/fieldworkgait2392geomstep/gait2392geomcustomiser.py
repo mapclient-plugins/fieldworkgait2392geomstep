@@ -295,16 +295,15 @@ class Gait2392GeomCustomiser(object):
         self.femurScaling = 1.0
         self.petallaScaling = 1.0
         self.tibfibScaling = 1.0
-        self.LL = None  # left lowerlimb object
-        self.LR = None  # right lowerlimb object
+        self.LL = None  # lowerlimb object
         self.osimmodel = None  # opensim model
         self._unit_scaling = dim_unit_scaling(
                                 self.config['in_unit'], self.config['out_unit']
                                 )
 
-        self._init_osim_model()
+        # self._init_osim_model()
 
-    def _init_osim_model(self):
+    def init_osim_model(self):
         self.osimmodel = osim.Model(TEMPLATE_OSIM_PATH)
 
     def _check_geom_path(self):

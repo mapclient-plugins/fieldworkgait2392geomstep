@@ -67,6 +67,9 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#osimmodel'))
+        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
 
         self._config = {}
         self._config['identifier'] = ''
@@ -89,6 +92,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         may be connected up to a button in a widget for example.
         '''
         # Put your execute step code here before calling the '_doneExecution' method.
+        self._g2392Cust.init_osim_model()
         self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
         self._g2392Cust.customise()
         self._doneExecution()
@@ -111,7 +115,10 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         The index is the index of the port in the port list.  If there is only one
         provides port for this step then the index can be ignored.
         '''
-        return self._g2392Cust.osimmodel
+        if index==2:
+            return self._g2392Cust.osimmodel._model
+        else:
+            return self._g2392Cust.LL
 
     def configure(self):
         '''
