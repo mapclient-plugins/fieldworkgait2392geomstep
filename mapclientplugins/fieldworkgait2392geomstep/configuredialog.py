@@ -2,7 +2,7 @@
 import os
 from PySide import QtGui
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
-from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS, SIDES
+from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS
 
 INVALID_STYLE_SHEET = 'background-color: rgba(239, 0, 0, 50)'
 DEFAULT_STYLE_SHEET = ''
@@ -37,8 +37,6 @@ class ConfigureDialog(QtGui.QDialog):
         for s in VALID_UNITS:
             self._ui.comboBox_in_unit.addItem(s)
             self._ui.comboBox_out_unit.addItem(s)
-        for s in SIDES:
-            self._ui.comboBox_side.addItem(s)
 
     def _makeConnections(self):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
@@ -97,7 +95,6 @@ class ConfigureDialog(QtGui.QDialog):
         config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
         config['in_unit'] = self._ui.comboBox_in_unit.currentText()
         config['out_unit'] = self._ui.comboBox_out_unit.currentText()
-        config['side'] = self._ui.comboBox_side.currentText()
 
         if self._ui.checkBox_write_osim_file.isChecked():
             config['write_osim_file'] = True
@@ -135,11 +132,6 @@ class ConfigureDialog(QtGui.QDialog):
         self._ui.comboBox_out_unit.setCurrentIndex(
             VALID_UNITS.index(
                 config['out_unit']
-                )
-            )
-        self._ui.comboBox_side.setCurrentIndex(
-            SIDES.index(
-                config['side']
                 )
             )
 

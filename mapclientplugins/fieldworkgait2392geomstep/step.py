@@ -39,17 +39,31 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
     '''
     Step for customising the OpenSim Gait2392 model geometry using
     fieldwork models. Parameters modified are body frame definitions, visual
-    meshes, and the scaling of non-patient-specific bodies.
+    meshes, and the scaling of non-patient-specific bodies. Gait2392
+    parameters are customised based on either one of the inputs. Only
+    1 input should be provided.
 
     Inputs
     ------
     fieldworkmodeldict : dict
-        Dictionary of model names : fieldwork models of the lower limb bones
+        Bone models to be used to customisation gait2392.
+        Dictionary keys should be:
+            pelvis
+            femur-l
+            femur-r
+            patella-l
+            patella-r
+            tibiafibula-l
+            tibiafibula-r
+    gias-lowerlimb : gias2.musculoskeletal.bonemodel.LowerLimbAtlas instance
+        Lower limb model to be used to customise gait2392.
 
     Outputs
     -------
     opensimmodel : opensim.model instance
         The customised gait2392 opensim model
+    gias-lowerlimb : gias2.musculoskeletal.bonemodel.LowerLimbAtlas instance
+        The lowerlimb model used in the customisation
     '''
 
     def __init__(self, location):
@@ -63,7 +77,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
                       'ju#fieldworkmodeldict'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
-                      'ju#lowerlimbtransform'))
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#osimmodel'))
@@ -79,11 +93,11 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config['out_unit'] = 'm'
         self._config['osim_output_dir'] = ''
         self._config['write_osim_file'] = True
-        self._config['side'] = 'left'
+        # self._config['side'] = 'left'
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)
         self.inputModels = None
-        self.inputTransform = None
+        self.inputLLAtlas = None
 
     def execute(self):
         '''
@@ -93,7 +107,10 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         '''
         # Put your execute step code here before calling the '_doneExecution' method.
         self._g2392Cust.init_osim_model()
-        self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
+        if self.inputModels is not None:
+            self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
+        if self.inputLLAtlas is not None:
+            self._g2392Cust.set_lowerlimb_atlas(self.inputModels)
         self._g2392Cust.customise()
         self._doneExecution()
 
@@ -106,8 +123,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         if index == 0:
             self.inputModels = dataIn # ju#fieldworkmodeldict
         else:
-            self.inputTransform = dataIn # ju#lowerlimbtransform
-            self._g2392Cust.ll_transform = self.inputTransform
+            self.inputLLAtlas = dataIn # ju#lowerlimbtransform
 
     def getPortData(self, index):
         '''
