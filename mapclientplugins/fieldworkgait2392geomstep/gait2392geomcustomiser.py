@@ -194,7 +194,7 @@ def calc_pelvis_ground_angles(pelvis):
 
     return -tilt, -_list, -rot
 
-def calc_hip_angles(pelvis, femur):
+def calc_hip_angles(pelvis, femur, side):
     """
     returns hip flexion, adduction, rotation
     """
@@ -204,11 +204,14 @@ def calc_hip_angles(pelvis, femur):
     R = transform3D.directAffine(pelvisACS, femurACS)[:3,:3]
 
     # calculate euler angles from rotation matrix 
-    add, flex, rot = mat2euler(R, 'szxy')
+    rot, flex, add = mat2euler(R, 'szxy')
 
-    return -flex, -rot, -add
+    if side=='l':
+        return -flex, -rot,  add
+    else:
+        return -flex,  rot, -add
 
-def calc_knee_angles(femur, tibfib):
+def calc_knee_angles(femur, tibfib, side):
     """
     returns knee flexion, adduction, rotation
     """
@@ -220,7 +223,10 @@ def calc_knee_angles(femur, tibfib):
     # calculate euler angles from rotation matrix 
     rot, flex, add = mat2euler(R, 'szxy')
 
-    return -flex, -rot, -add
+    if side=='l':
+        return -flex, rot, -add
+    else:
+        return -flex, -rot, add
 
 def _calc_knee_spline_coords(ll, flex_angles):
     """
@@ -384,29 +390,53 @@ class Gait2392GeomCustomiser(object):
         """
 
         # left
-        ll_l = bonemodels.LowerLimbLeftAtlas('left lower limb')
-        ll_l.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
-        ll_l.set_bone_gfield('femur', gfieldsdict['femur-l'])
-        ll_l.set_bone_gfield('patella', gfieldsdict['patella-l'])
-        ll_l.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-l'])
-        ll_l.models['pelvis'].update_acs()
+        if not self._hasInputLL:
+            ll_l = bonemodels.LowerLimbLeftAtlas('left lower limb')
+            ll_l.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
+            ll_l.set_bone_gfield('femur', gfieldsdict['femur-l'])
+            ll_l.set_bone_gfield('patella', gfieldsdict['patella-l'])
+            ll_l.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-l'])
+        else:
+            ll_l = self.LL.ll_l
+            if 'pelvis' in gfieldsdict:
+                ll_l.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
+            if 'femur-l' in gfieldsdict:
+                ll_l.set_bone_gfield('femur', gfieldsdict['femur-l'])
+            if 'patella-l' in gfieldsdict:
+                ll_l.set_bone_gfield('patella', gfieldsdict['patella-l'])
+            if 'tibiafibula-l' in gfieldsdict:
+                ll_l.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-l'])
+
         update_femur_opensim_acs(ll_l.models['femur'])
         update_tibiafibula_opensim_acs(ll_l.models['tibiafibula'])
 
         # right
-        ll_r = bonemodels.LowerLimbRightAtlas('right lower limb')
-        ll_r.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
-        ll_r.set_bone_gfield('femur', gfieldsdict['femur-r'])
-        ll_r.set_bone_gfield('patella', gfieldsdict['patella-r'])
-        ll_r.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-r'])
-        ll_r.models['pelvis'].update_acs()
+        if not self._hasInputLL:
+            ll_r = bonemodels.LowerLimbLeftAtlas('right lower limb')
+            ll_r.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
+            ll_r.set_bone_gfield('femur', gfieldsdict['femur-r'])
+            ll_r.set_bone_gfield('patella', gfieldsdict['patella-r'])
+            ll_r.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-r'])
+        else:
+            ll_r = self.LL.ll_r
+            if 'pelvis' in gfieldsdict:
+                ll_r.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
+            if 'femur-r' in gfieldsdict:
+                ll_r.set_bone_gfield('femur', gfieldsdict['femur-r'])
+            if 'patella-r' in gfieldsdict:
+                ll_r.set_bone_gfield('patella', gfieldsdict['patella-r'])
+            if 'tibiafibula-r' in gfieldsdict:
+                ll_r.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-r'])
+        
         update_femur_opensim_acs(ll_r.models['femur'])
         update_tibiafibula_opensim_acs(ll_r.models['tibiafibula'])
 
         # 2side
-        self.LL = lowerlimbatlas.LowerLimbAtlas('lower limb')
-        self.LL.ll_l = ll_l
-        self.LL.ll_r = ll_r
+        if not self._hasInputLL:
+            self.LL = lowerlimbatlas.LowerLimbAtlas('lower limb')
+            self.LL.ll_l = ll_l
+            self.LL.ll_r = ll_r
+
         self.LL._update_model_dict()
 
     def _save_vtp(self, gf, filename, bodycoordmapper):
@@ -513,7 +543,7 @@ class Gait2392GeomCustomiser(object):
                 flex, rot, add = self.LL.hip_rot_r
             
         else:
-            flex, rot, add = calc_hip_angles(pelvis, femur)
+            flex, rot, add = calc_hip_angles(pelvis, femur, side)
 
         hip_joint = self.osimmodel.joints['hip_{}'.format(side)]
         ## hip_flexion_l
@@ -618,7 +648,7 @@ class Gait2392GeomCustomiser(object):
             else:
                 flex, rot, add = self.LL._knee_rot_r
         else:
-            flex, rot, add = calc_knee_angles(femur, tibfib)
+            flex, rot, add = calc_knee_angles(femur, tibfib, side)
 
         ## hip_flexion_l
         knee_joint.coordSets['knee_angle_{}'.format(side)].defaultValue = flex

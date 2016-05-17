@@ -40,8 +40,9 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
     Step for customising the OpenSim Gait2392 model geometry using
     fieldwork models. Parameters modified are body frame definitions, visual
     meshes, and the scaling of non-patient-specific bodies. Gait2392
-    parameters are customised based on either one of the inputs. Only
-    1 input should be provided.
+    parameters are customised based on the inputs. If both inputs are
+    provided, the bone meshes in the lowerlimbatlas will be updated
+    with the meshes in the fieldworkmodeldict.
 
     Inputs
     ------
@@ -74,10 +75,10 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         # Ports:
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
-                      'ju#fieldworkmodeldict'))
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
-                      'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
+                      'ju#fieldworkmodeldict'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#osimmodel'))
@@ -107,10 +108,10 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         '''
         # Put your execute step code here before calling the '_doneExecution' method.
         self._g2392Cust.init_osim_model()
-        if self.inputModels is not None:
-            self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
         if self.inputLLAtlas is not None:
             self._g2392Cust.set_lowerlimb_atlas(self.inputLLAtlas)
+        if self.inputModels is not None:
+            self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
         self._g2392Cust.customise()
         self._doneExecution()
 
@@ -121,9 +122,9 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         uses port for this step then the index can be ignored.
         '''
         if index == 0:
-            self.inputModels = dataIn # ju#fieldworkmodeldict
+            self.inputLLAtlas = dataIn # gias-lowerlimb
         else:
-            self.inputLLAtlas = dataIn # ju#lowerlimbtransform
+            self.inputModels = dataIn # ju#fieldworkmodeldict
 
     def getPortData(self, index):
         '''
