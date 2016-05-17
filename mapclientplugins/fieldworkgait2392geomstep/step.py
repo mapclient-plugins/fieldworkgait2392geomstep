@@ -110,7 +110,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         if self.inputModels is not None:
             self._g2392Cust.set_lowerlimb_gfields(self.inputModels)
         if self.inputLLAtlas is not None:
-            self._g2392Cust.set_lowerlimb_atlas(self.inputModels)
+            self._g2392Cust.set_lowerlimb_atlas(self.inputLLAtlas)
         self._g2392Cust.customise()
         self._doneExecution()
 

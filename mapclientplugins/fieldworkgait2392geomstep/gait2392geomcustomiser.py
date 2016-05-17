@@ -43,10 +43,10 @@ SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 TEMPLATE_OSIM_PATH = os.path.join(SELF_DIR, 'data', 'gait2392_simbody.osim')
 OSIM_FILENAME = 'gait2392_simbody.osim'
 OSIM_BODY_NAME_MAP = {'pelvis': 'pelvis',
-                      'femur-left': 'femur_l',
-                      'femur-right': 'femur_r',
-                      'tibiafibula-left': 'tibia_l',
-                      'tibiafibula-right': 'tibia_r',
+                      'femur-l': 'femur_l',
+                      'femur-r': 'femur_r',
+                      'tibiafibula-l': 'tibia_l',
+                      'tibiafibula-r': 'tibia_r',
                       }
 PELVIS_SUBMESHES = ('RH', 'LH', 'sac')
 PELVIS_SUBMESH_ELEMS = {'RH': range(0, 73),
@@ -249,7 +249,7 @@ def _calc_knee_spline_coords(ll, flex_angles):
     # sample tibia ACS origin at each flexion angle
     tib_os = []
     for a in flex_angles:
-        _ll.update_tibiafibula([a,])
+        _ll.update_tibiafibula([a,0,0])
         tib_o = 0.5*(_ll.models['tibiafibula'].landmarks['tibiafibula-LC'] + 
                      _ll.models['tibiafibula'].landmarks['tibiafibula-MC']
                      )
@@ -385,8 +385,8 @@ class Gait2392GeomCustomiser(object):
         ll_l.set_bone_gfield('patella', gfieldsdict['patella-l'])
         ll_l.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-l'])
         ll_l.models['pelvis'].update_acs()
-        update_femur_opensim_acs(ll_l.models['femur-l'])
-        update_tibiafibula_opensim_acs(ll_l.models['tibiafibula-l'])
+        update_femur_opensim_acs(ll_l.models['femur'])
+        update_tibiafibula_opensim_acs(ll_l.models['tibiafibula'])
 
         # right
         ll_r = bonemodels.LowerLimbRightAtlas('right lower limb')
@@ -395,8 +395,8 @@ class Gait2392GeomCustomiser(object):
         ll_r.set_bone_gfield('patella', gfieldsdict['patella-r'])
         ll_r.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-r'])
         ll_r.models['pelvis'].update_acs()
-        update_femur_opensim_acs(ll_r.models['femur-r'])
-        update_tibiafibula_opensim_acs(ll_r.models['tibiafibula-r'])
+        update_femur_opensim_acs(ll_r.models['femur'])
+        update_tibiafibula_opensim_acs(ll_r.models['tibiafibula'])
 
         # 2side
         self.LL = lowerlimbatlas.LowerLimbAtlas('lower limb')
@@ -431,10 +431,11 @@ class Gait2392GeomCustomiser(object):
 
         # update coordinate defaults
         pelvis_ground_joint = self.osimmodel.joints['ground_pelvis']
-        if self.ll_transform is None:
-            tilt, _list, rot = calc_pelvis_ground_angles(self.LL)
+        if self._hasInputLL:
+            tilt, _list, rot = self.LL.pelvis_rigid[3:]
         else:
-            tilt, _list, rot = self.ll_transform.pelvisRigid[3:]
+            tilt, _list, rot = calc_pelvis_ground_angles(pelvis)
+
         ## tilt
         pelvis_ground_joint.coordSets['pelvis_tilt'].defaultValue = tilt
         ## list
@@ -500,8 +501,6 @@ class Gait2392GeomCustomiser(object):
             femur.acs.map_local(hjc[np.newaxis])[0] * self._unit_scaling
 
         # update coordinate defaults
-        hip_joint = self.osimmodel.joints['hip_{}'.format(side)]
-        flex, rot, add = calc_hip_angles(self.LL, side)
         if self._hasInputLL:
             if side=='l':
                 flex, rot, add = -1.0*self.LL.hip_rot_l
@@ -511,6 +510,7 @@ class Gait2392GeomCustomiser(object):
         else:
             flex, rot, add = calc_hip_angles(pelvis, femur)
 
+        hip_joint = self.osimmodel.joints['hip_{}'.format(side)]
         ## hip_flexion_l
         hip_joint.coordSets['hip_flexion_{}'.format(side)].defaultValue = flex
         ## hip_adduction_l
@@ -564,10 +564,10 @@ class Gait2392GeomCustomiser(object):
         kj.updateSimmSplineParams('translation2', x[1], y[1])
 
     def cust_osim_tibiafibula_l(self):
-        self._cust_osim_tibiafibula(self, 'l')
+        self._cust_osim_tibiafibula('l')
 
     def cust_osim_tibiafibula_r(self):
-        self._cust_osim_tibiafibula(self, 'r')
+        self._cust_osim_tibiafibula('r')
 
     def _cust_osim_tibiafibula(self, side):
         if (side!='l') and (side!='r'):
@@ -609,9 +609,9 @@ class Gait2392GeomCustomiser(object):
         knee_joint = self.osimmodel.joints['knee_{}'.format(side)]
         if self._hasInputLL:
             if side=='l':
-                flex, rot, add = self.ll_transform._knee_rot_l
+                flex, rot, add = self.LL._knee_rot_l
             else:
-                flex, rot, add = self.ll_transform._knee_rot_r
+                flex, rot, add = self.LL._knee_rot_r
         else:
             flex, rot, add = calc_knee_angles(femur, tibfib)
 
