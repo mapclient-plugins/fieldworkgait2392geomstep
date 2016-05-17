@@ -334,6 +334,11 @@ class Gait2392GeomCustomiser(object):
         self.LL = ll
         self._hasInputLL = True
 
+        update_femur_opensim_acs(self.LL.ll_l.models['femur'])
+        update_tibiafibula_opensim_acs(self.LL.ll_l.models['tibiafibula'])
+        update_femur_opensim_acs(self.LL.ll_r.models['femur'])
+        update_tibiafibula_opensim_acs(self.LL.ll_r.models['tibiafibula'])
+
     def set_lowerlimb_gfields(self, gfieldsdict):
         """
         Instantiate the lower limb object using input models
@@ -503,9 +508,9 @@ class Gait2392GeomCustomiser(object):
         # update coordinate defaults
         if self._hasInputLL:
             if side=='l':
-                flex, rot, add = -1.0*self.LL.hip_rot_l
+                flex, rot, add = self.LL.hip_rot_l
             else:
-                flex, rot, add = -1.0*self.LL.hip_rot_r
+                flex, rot, add = self.LL.hip_rot_r
             
         else:
             flex, rot, add = calc_hip_angles(pelvis, femur)
