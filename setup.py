@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys, os
 
 setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
-      version='0.0',
+      version='0.1',
       description='',
       long_description="",
       classifiers=[],
@@ -17,7 +17,6 @@ setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
       install_requires=[
           'numpy',
           'scipy',
-          'mayavi[app]',
           'transforms3d',
       ],
       )

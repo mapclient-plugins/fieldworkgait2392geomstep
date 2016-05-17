@@ -11,10 +11,22 @@ VTK, Mayavi2
 
 Inputs
 ------
-fieldworkmodeldict : dict
-    Dictionary of model names : fieldwork models of the lower limb bones
+gias-lowerlimb : gias2.musculoskeletal.bonemodel.LowerLimbAtlas instance
+    Lower limb model to be used to customise gait2392.
+fieldworkmodeldict : dict [optional]
+    Bone models to be used to customisation gait2392.
+    Dictionary keys should be:
+        pelvis
+        femur-l
+        femur-r
+        patella-l
+        patella-r
+        tibiafibula-l
+        tibiafibula-r
 
 Outputs
 -------
 opensimmodel : opensim.model instance
     The customised gait2392 opensim model
+gias-lowerlimb : gias2.musculoskeletal.bonemodel.LowerLimbAtlas instance
+    The lowerlimb model used in the customisation
