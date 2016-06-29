@@ -33,6 +33,7 @@ from gias2.musculoskeletal import mocap_landmark_preprocess
 from gias2.musculoskeletal.bonemodels import bonemodels
 from gias2.musculoskeletal.bonemodels import lowerlimbatlas
 from gias2.musculoskeletal import osim
+from gias2.musculoskeletal import fw_model_landmarks as fml
 
 from transforms3d.euler import mat2euler
 
@@ -269,6 +270,8 @@ def _calc_knee_spline_coords(ll, flex_angles):
 #=============================================================================#
 class Gait2392GeomCustomiser(object):
     gfield_disc = (6,6)
+    ankle_offset = np.array([0., -0.01, 0.])
+    back_offset = np.array([0., 0.01, 0.])
 
     def __init__(self, config, gfieldsdict=None, ll=None):
         """
@@ -695,10 +698,12 @@ class Gait2392GeomCustomiser(object):
             )
 
     def cust_osim_ankle_l(self):
-        self._cust_osim_ankle('l')
+        # self._cust_osim_ankle('l')
+        self._cust_osim_foot('l')
 
     def cust_osim_ankle_r(self):
-        self._cust_osim_ankle('r')
+        # self._cust_osim_ankle('r')
+        self._cust_osim_foot('r')
 
     def _cust_osim_ankle(self, side):
         if (side!='l') and (side!='r'):
@@ -712,6 +717,135 @@ class Gait2392GeomCustomiser(object):
             tibfib.acs.map_local(ankle_centre[np.newaxis]).squeeze()*self._unit_scaling
         self.osimmodel.joints['ankle_{}'.format(side)].location = \
             np.array([0,10,0], dtype=float)*self._unit_scaling
+
+    def _cust_osim_foot(self, side):
+        """
+        Customises foot models by applying opensim scaling to the foot segments,
+        joints, and muscle sites.
+
+        Segment topology in the foot is
+        tibia -> ankle(j) -> talus -> subtalar(j) -> calcaneus -> mtp(j) -> toes
+        """
+
+        if (side!='l') and (side!='r'):
+            raise ValueError('Invalid side')
+
+        tibfib = self.LL.models['tibiafibula-'+side]
+        femur = self.LL.models['femur-'+side]
+
+        # set ankle joint parent location in custom tibiafibula
+        ankle_centre = 0.5*(
+            tibfib.landmarks['tibiafibula-MM'] + tibfib.landmarks['tibiafibula-LM']
+            )
+        self.osimmodel.joints['ankle_{}'.format(side)].locationInParent = \
+            (tibfib.acs.map_local(ankle_centre[np.newaxis]).squeeze()*self._unit_scaling)+\
+            self.ankle_offset
+
+        # get scaling factor from femur size
+        scale_factor_0 = _calc_scaling_femur_length(femur)
+        scale_factor_array = np.array([scale_factor_0,]*3)  # isotropic scaling for now
+        print('foot {} scale factor: {}'.format(side, scale_factor_array))
+
+        # scale bodies
+        _scale_body(self.osimmodel.bodies['talus_{}'.format(side)], scale_factor_array)
+        _scale_body(self.osimmodel.bodies['calcn_{}'.format(side)], scale_factor_array)
+        _scale_body(self.osimmodel.bodies['toes_{}'.format(side)], scale_factor_array)
+        
+        # scale joints
+        ankle_scales = [
+            osim.Scale(
+                [scale_factor_0,]*3,
+                'ankle_{}_scale_1'.format(side),
+                'talus_{}'.format(side),
+                ),
+            ]
+        self.osimmodel.joints['ankle_{}'.format(side)].scale(*ankle_scales)
+
+        subtalar_scales = [
+            osim.Scale(
+                [scale_factor_0,]*3,
+                'subtalar_{}_scale_0'.format(side),
+                'talus_{}'.format(side),
+                ),
+            osim.Scale(
+                [scale_factor_0,]*3,
+                'subtalar_{}_scale_1'.format(side),
+                'calcn_{}'.format(side),
+                ),
+            ]
+        self.osimmodel.joints['subtalar_{}'.format(side)].scale(*subtalar_scales)
+
+        mtp_scales = [
+            osim.Scale(
+                [scale_factor_0,]*3,
+                'mtp_{}_scale_0'.format(side),
+                'calcn_{}'.format(side),
+                ),
+            osim.Scale(
+                [scale_factor_0,]*3,
+                'mtp_{}_scale_1'.format(side),
+                'toes_{}'.format(side),
+                ),
+            ]
+        self.osimmodel.joints['mtp_{}'.format(side)].scale(*mtp_scales)
+
+        # scale muscles of the foot
+        muscle_scales = [
+            osim.Scale(scale_factor_array, 'mus_scale_0', 'talus_{}'.format(side)),
+            osim.Scale(scale_factor_array, 'mus_scale_1', 'caln_{}'.format(side)),
+            osim.Scale(scale_factor_array, 'mus_scale_2', 'toes_{}'.format(side)),
+            ]
+
+        state0 = self.osimmodel._model.initSystem()
+        foot_muscles = _get_foot_muscles(self.osimmodel, side)
+
+        for mus in foot_muscles:
+            print('scaling foot muscle: {}'.format(mus.name))
+            mus.scale(state0, *muscle_scales)
+
+    def cust_torso(self):
+
+        pelvis = self.LL.models['pelvis']
+        femur_l = self.LL.models['femur-l']
+        femur_r = self.LL.models['femur-r']
+
+        # set back joint parent location in custom pelvis
+        sacrum_top = pelvis.landmarks['pelvis-SacPlat']
+        self.osimmodel.joints['back'].locationInParent = \
+            (pelvis.acs.map_local(sacrum_top[np.newaxis]).squeeze()*self._unit_scaling)+\
+            self.back_offset
+
+        # get scaling factor from femur size
+        scale_factor_fl = _calc_scaling_femur_length(femur_r)
+        scale_factor_fr = _calc_scaling_femur_length(femur_l)
+        scale_factor = 0.5*(scale_factor_fl + scale_factor_fr)
+        scale_factor_array = np.array([scale_factor,]*3)  # isotropic scaling for now
+        print('torso scale factor: {}'.format(scale_factor_array))
+
+        # scale bodies
+        _scale_body(self.osimmodel.bodies['torso'], scale_factor_array)
+        
+        # scale joints
+        back_scales = [
+            osim.Scale(
+                scale_factor_array,
+                'back_scale_1',
+                'torso',
+                ),
+            ]
+        self.osimmodel.joints['back'].scale(*back_scales)
+
+        # scale muscles of the torso
+        muscle_scales = [
+            osim.Scale(scale_factor_array, 'mus_scale_0', 'torso'),
+            ]
+
+        state0 = self.osimmodel._model.initSystem()
+        torso_muscles = _get_segment_muscles(self.osimmodel, 'torso')
+
+        for mus in torso_muscles:
+            print('scaling torso muscle: {}'.format(mus.name))
+            mus.scale(state0, *muscle_scales)
 
     def cust_gen_scaling(self):
         """
@@ -746,6 +880,7 @@ class Gait2392GeomCustomiser(object):
         self.cust_osim_tibiafibula_r()
         self.cust_osim_ankle_l()
         self.cust_osim_ankle_r()
+        self.cust_torso()
         if self.config['write_osim_file']:
             self.write_cust_osim_model()
 
@@ -775,3 +910,42 @@ def _calc_scaling_femur_length(new_femur):
     l_new = np.sqrt(((new_HC - 0.5*(new_MEC + new_LEC))**2.0).sum())
 
     return l_new/L_OSIM
+
+def _get_foot_muscles(model, side):
+    """
+    Return osim muscles instances of muscles in the foot
+    """
+    foot_segs = set([
+        'talus_{}'.format(side),
+        'calcn_{}'.format(side),
+        'toes_{}'.format(side),
+        ])
+    foot_muscles = []
+    for mus in model.muscles.values():
+        # check each path point to see if they are on a foot segment
+        for pp in mus.getAllPathPoints():
+            if pp.body.name in foot_segs:
+                foot_muscles.append(mus)
+                break
+
+    return foot_muscles
+
+def _get_segment_muscles(model, segname):
+    """
+    Return osim muscles instances of muscles in the defined segment
+    """
+    seg_muscles = []
+    for mus in model.muscles.values():
+        # check each path point to see if they are on the segment
+        for pp in mus.getAllPathPoints():
+            if pp.body.name==segname:
+                seg_muscles.append(mus)
+                break
+
+    return seg_muscles
+
+def _scale_body(body, sfarray):
+    print('scaling {} by {}'.format(body.name, sfarray))
+    body.scale(sfarray, False)
+    body.scaleInertialProperties(sfarray, False)
+    body.scaleMass(sfarray.prod()) # mass should be cubed of scale factor
