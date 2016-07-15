@@ -1,3 +1,5 @@
 *.pyc
 *.pyo
 *~
+*err.log
+*out.log
