@@ -17,11 +17,15 @@ def _dist(x1, x2):
 
 def _apply_marker_offset(model, name, coords):
     """
-    Apply an offset to landmark coordinates. The offset is between
-    the landmark and the opensim virtual marker.
+    Apply an offset to landmark coordinates. The offset is from the bone
+    surface landmark to the skin surface opensim virtual marker.
     """
 
     offset_local = virtualmarker.marker_offsets[name]
+    # if no offset
+    if np.all(offset_local==np.zeros(3)):
+        return coords
+
     offset_mag = math.mag(offset_local)
     offset_v = math.norm(offset_local)
     offset_v_global = math.norm(
@@ -41,6 +45,7 @@ def _get_cust_landmark(body, lname, offset=True):
         _lname = lname
     ld = body.landmarks[_lname]
     if offset:
+        # apply an offset from bone surface to skin surface
         return _apply_marker_offset(body, lname, ld)
     else:
         return ld
@@ -267,7 +272,7 @@ def scale_body_mass_inertia(body, sf, scaledisplay=True):
 
     return body
 
-def scale_joint(joint, sf, bodies):
+def scale_joint(joint, sfs, bodies):
     """
     Scales a joints properties according to a 3-tuple of scale factors.
     Uses joint.scale to calculate the new parameters but reverts scaling
@@ -276,14 +281,14 @@ def scale_joint(joint, sf, bodies):
     inputs
     ------
     joint: osim.Joint instance
-    sf: 3-tuple of x,y,z scale factors
+    sfs: a list of 3-tuple of x,y,z scale factors
     bodies: list of names of bodies connected to joint
 
     returns
     -------
     joint: scaled osim.Joint instance
     """
-    print('scaling {} by {}'.format(joint.name, sf))
+    print('scaling {} by {}'.format(joint.name, sfs))
 
     old_location = joint.location
     old_locationInParent = joint.locationInParent
@@ -292,8 +297,8 @@ def scale_joint(joint, sf, bodies):
     joint_scales = []
     for bi, bname in enumerate(bodies):
         s = osim.Scale(
-                sf,
-                '{}_scale_{}'.format(joint.name, bi),
+                sfs[bi],
+                '{}_scale_{}'.format(joint.name, bname),
                 bname,
                 )
         joint_scales.append(s)
@@ -305,12 +310,12 @@ def scale_joint(joint, sf, bodies):
     new_locationInParent = joint.locationInParent
 
     # scale back to 1,1,1
-    sf_inv = 1.0/np.array(sf)
+    # sf_inv = 1.0/np.array(sf)
     joint_scales = []
     for bi, bname in enumerate(bodies):
         s = osim.Scale(
-                sf_inv,
-                '{}_scale_{}'.format(joint.name, bi),
+                1.0/sfs[bi],
+                '{}_scale_{}'.format(joint.name, bname),
                 bname,
                 )
         joint_scales.append(s)

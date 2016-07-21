@@ -273,6 +273,22 @@ class Gait2392GeomCustomiser(object):
     gfield_disc = (6,6)
     ankle_offset = np.array([0., -0.01, 0.])
     back_offset = np.array([0., 0.01, 0.])
+    # back_offset = np.array([0., 0.0, 0.])
+
+    _body_scalers = {
+                'torso': scaler.calc_whole_body_scale_factors,
+                'pelvis': scaler.calc_pelvis_scale_factors,
+                'femur_l': scaler.calc_femur_scale_factors,
+                'femur_r': scaler.calc_femur_scale_factors,
+                'tibia_l': scaler.calc_tibia_scale_factors,
+                'tibia_r': scaler.calc_tibia_scale_factors,
+                'talus_l': scaler.calc_whole_body_scale_factors,
+                'talus_r': scaler.calc_whole_body_scale_factors,
+                'calcn_l': scaler.calc_whole_body_scale_factors,
+                'calcn_r': scaler.calc_whole_body_scale_factors,
+                'toes_l': scaler.calc_whole_body_scale_factors,
+                'toes_r': scaler.calc_whole_body_scale_factors,
+                }
 
     def __init__(self, config, gfieldsdict=None, ll=None, verbose=True):
         """
@@ -320,6 +336,7 @@ class Gait2392GeomCustomiser(object):
         self.LL = None  # lowerlimb object
         self._hasInputLL = False 
         self.osimmodel = None  # opensim model
+        self.markerset = None  # markerset associated with opensim model
         self.verbose = verbose
         self._unit_scaling = dim_unit_scaling(
                                 self.config['in_unit'], self.config['out_unit']
@@ -329,6 +346,8 @@ class Gait2392GeomCustomiser(object):
             self.set_lowerlimb_gfields(gfieldsdict)
         if ll is not None:
             self.set_lowerlimb_atlas(ll)
+
+        self._body_scale_factors = {}
 
     def init_osim_model(self):
         self.osimmodel = osim.Model(TEMPLATE_OSIM_PATH)
@@ -457,6 +476,28 @@ class Gait2392GeomCustomiser(object):
                         )
         vtkwriter.writeVTP()
 
+    def _get_osimbody_scale_factors(self, bodyname):
+        """
+        Returns the scale factor for a body. Caches scale factors
+        that have already been calculated
+
+        inputs
+        ------
+        bodyname : str
+            Gait2392 name of a body
+
+        returns
+        -------
+        sf : length 3 ndarray
+            scale factor array
+        """
+        
+        if bodyname not in self._body_scale_factors:
+            sf = self._body_scalers[bodyname](self.LL, self._unit_scaling)
+            self._body_scale_factors[bodyname] = sf
+
+        return self._body_scale_factors[bodyname]
+
     def cust_osim_pelvis(self):
 
         if self.verbose:
@@ -466,9 +507,10 @@ class Gait2392GeomCustomiser(object):
         osim_pelvis = self.osimmodel.bodies[OSIM_BODY_NAME_MAP['pelvis']]
 
         # scale inertial properties
-        sf = scaler.calc_pelvis_scale_factors(
-                self.LL, self._unit_scaling,
-                )
+        # sf = scaler.calc_pelvis_scale_factors(
+        #         self.LL, self._unit_scaling,
+        #         )
+        sf = self._get_osimbody_scale_factors('pelvis')
         scaler.scale_body_mass_inertia(osim_pelvis, sf)
         if self.verbose:
             print('scale factor: {}'.format(sf))
@@ -573,10 +615,11 @@ class Gait2392GeomCustomiser(object):
                         ]
 
         # scale inertial properties
-        sf = scaler.calc_femur_scale_factors(
-                self.LL, self._unit_scaling,
-                side=None,
-                )
+        # sf = scaler.calc_femur_scale_factors(
+        #         self.LL, self._unit_scaling,
+        #         side=None,
+        #         )
+        sf = self._get_osimbody_scale_factors('femur_'+side)
         scaler.scale_body_mass_inertia(osim_femur, sf)
         if self.verbose:
             print('scale factor: {}'.format(sf))
@@ -707,10 +750,11 @@ class Gait2392GeomCustomiser(object):
                         ]
 
         # scale inertial properties
-        sf = scaler.calc_tibia_scale_factors(
-                self.LL, self._unit_scaling,
-                side=None,
-                )
+        # sf = scaler.calc_tibia_scale_factors(
+        #         self.LL, self._unit_scaling,
+        #         side=None,
+        #         )
+        sf = self._get_osimbody_scale_factors('tibia_'+side)
         scaler.scale_body_mass_inertia(osim_tibfib, sf)
         if self.verbose:
             print('scale factor: {}'.format(sf))
@@ -845,28 +889,43 @@ class Gait2392GeomCustomiser(object):
         femur = self.LL.models['femur-'+side]
 
         # scale foot bodies and joints
-        sf = scaler.calc_whole_body_scale_factors(
-                self.LL, self._unit_scaling,
-                )
+        # sf = scaler.calc_whole_body_scale_factors(
+        #         self.LL, self._unit_scaling,
+        #         )
         scaler.scale_body_mass_inertia(
-            self.osimmodel.bodies['talus_{}'.format(side)], sf
+            self.osimmodel.bodies['talus_{}'.format(side)],
+            self._get_osimbody_scale_factors('talus_{}'.format(side))
             )
         scaler.scale_body_mass_inertia(
-            self.osimmodel.bodies['calcn_{}'.format(side)], sf
+            self.osimmodel.bodies['calcn_{}'.format(side)],
+            self._get_osimbody_scale_factors('calcn_{}'.format(side))
             )
         scaler.scale_body_mass_inertia(
-            self.osimmodel.bodies['toes_{}'.format(side)], sf
+            self.osimmodel.bodies['toes_{}'.format(side)],
+            self._get_osimbody_scale_factors('toes_{}'.format(side))
             )
+        
         scaler.scale_joint(
-            self.osimmodel.joints['subtalar_{}'.format(side)], sf,
+            self.osimmodel.joints['subtalar_{}'.format(side)],
+            [
+                self._get_osimbody_scale_factors('talus_{}'.format(side)),
+                self._get_osimbody_scale_factors('calcn_{}'.format(side)),
+            ],
             ['talus_{}'.format(side), 'calcn_{}'.format(side)]
             )
         scaler.scale_joint(
-            self.osimmodel.joints['mtp_{}'.format(side)], sf,
+            self.osimmodel.joints['mtp_{}'.format(side)],
+            [
+                self._get_osimbody_scale_factors('calcn_{}'.format(side)),
+                self._get_osimbody_scale_factors('toes_{}'.format(side)),
+            ],
             ['calcn_{}'.format(side), 'toes_{}'.format(side)]
             )
         if self.verbose:
-            print('scale factor: {}'.format(sf))
+            print('scale factor: {}'.format(
+                self._get_osimbody_scale_factors('talus_{}'.format(side))
+                )
+            )
 
         # remove multiplier functions from joint translations
         ankle = self.osimmodel.joints['ankle_{}'.format(side)]
@@ -910,9 +969,10 @@ class Gait2392GeomCustomiser(object):
 
 
         # scale torso inertial
-        sf = scaler.calc_whole_body_scale_factors(
-                self.LL, self._unit_scaling,
-                )
+        # sf = scaler.calc_whole_body_scale_factors(
+        #         self.LL, self._unit_scaling,
+        #         )
+        sf = self._get_osimbody_scale_factors('torso')
         scaler.scale_body_mass_inertia(
             self.osimmodel.bodies['torso'], sf
             )
@@ -998,6 +1058,8 @@ class Gait2392GeomCustomiser(object):
                 )
             )
 
+        self.add_markerset()
+
         if self.config['write_osim_file']:
             self.write_cust_osim_model()
 
@@ -1033,6 +1095,63 @@ class Gait2392GeomCustomiser(object):
         self.osimmodel.scale(self._osimmodel_init_state, *model_sfs)
         return model_sfs
 
+    def add_markerset(self):
+        """
+        Add the default 2392 markerset to the customised osim model
+        with customised marker positions
+        """
+        vm = scaler.virtualmarker
+        g2392_markers = vm._load_virtual_markers()[0]
+        # maps of opensim names to fw names for markers and bodies
+        osim2fw_markernames = dict([(it[1], it[0]) for it in vm.marker_name_map.items()])
+        osim2fw_bodynames = dict([(it[1], it[0]) for it in OSIM_BODY_NAME_MAP.items()])
+
+        def _local_coords(bodyname, landmarkname):
+            """
+            Returns the local coordinates of a landmark
+            """
+            if landmarkname[-2:] in ('-l', '-r'):
+                _landmarkname = landmarkname[:-2]
+            else:
+                _landmarkname = landmarkname
+            global_coord = self.LL.models[bodyname].landmarks[_landmarkname]
+            local_coords = self.LL.models[bodyname].acs.map_local(
+                global_coord[np.newaxis,:]
+                ).squeeze()
+            local_offset_coords = self._unit_scaling*(local_coords + vm.marker_offsets[landmarkname])
+            return local_offset_coords
+
+        def _scale_marker(marker):
+            """
+            Scales the default opensim marker position by the scaling factor
+            for its body
+            """
+            body_sf = self._get_osimbody_scale_factors(marker.bodyName)
+            return marker.offset*body_sf
+
+        self.markerset = opensim.MarkerSet()
+        for osim_marker_name, marker0 in g2392_markers.items():
+            if osim_marker_name in osim2fw_markernames:
+                # if maker has fw equivalent:
+                fw_body_name = osim2fw_bodynames[marker0.bodyName]
+                fw_landmark_name = osim2fw_markernames[osim_marker_name]
+                new_offset = _local_coords(
+                    fw_body_name,
+                    fw_landmark_name,
+                    )
+            else:
+                # else scale default
+                new_offset = _scale_marker(marker0)
+
+            new_marker = osim.Marker(
+                bodyname=marker0.bodyName,
+                offset=new_offset
+                )
+            new_marker.name = marker0.name
+            self.markerset.adoptAndAppend(new_marker._osimMarker)
+
+        self.osimmodel._model.replaceMarkerSet(self._osimmodel_init_state, self.markerset)
+
 def _get_foot_muscles(model, side):
     """
     Return osim muscles instances of muscles in the foot
@@ -1061,3 +1180,4 @@ def _remove_multiplier(owner):
     if newfunc.getConcreteClassName()=='MultiplierFunction':
         oldfunc = opensim.MultiplierFunction_safeDownCast(newfunc).getFunction()
         owner.setFunction(oldfunc.clone())
+

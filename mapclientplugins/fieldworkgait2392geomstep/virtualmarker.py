@@ -9,8 +9,8 @@ import numpy as np
 from gias2.musculoskeletal.osim import Marker
 
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
-MARKERSET_PATH = os.path.join(SELF_DIR, 'data', 'gait2392_Scale_MarkerSet.xml')
-MARKER_OFFSET_PATH = os.path.join(SELF_DIR, 'data/', 'marker_offsets.dat')
+MARKERSET_PATH = str(os.path.join(SELF_DIR, 'data', 'gait2392_Scale_MarkerSet.xml'))
+MARKER_OFFSET_PATH = str(os.path.join(SELF_DIR, 'data/', 'marker_offsets.dat'))
 
 # dictionary mapping fieldwork landmark names to gait2392's virtual marker
 # names
@@ -40,7 +40,17 @@ def _load_virtual_markers():
     _osim_markerset = opensim.MarkerSet(MARKERSET_PATH)
     for mi in range(_osim_markerset.getSize()):
         osim_marker = _osim_markerset.get(mi)
-        marker = Marker(osim_marker)
+
+        # create a copy because the markerset and its marers only exists
+        # in the function
+        _v = opensim.Vec3()
+        osim_marker.getOffset(_v)
+        offset = np.array([_v.get(i) for i in range(3)])
+        marker = Marker(
+                    name=osim_marker.getName(),
+                    bodyname=osim_marker.getBodyName(),
+                    offset=offset,
+                    )
         markers[marker.name] = marker
         marker_coords[marker.name] = marker.offset
 
