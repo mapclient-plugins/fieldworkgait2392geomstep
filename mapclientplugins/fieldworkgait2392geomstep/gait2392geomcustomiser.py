@@ -1013,12 +1013,16 @@ class Gait2392GeomCustomiser(object):
         # self.recover_simmsplines()
         # model_scale_factors = self._calc_body_scale_factors()
 
+        # for debugging: get original muscle optimal fibre lengths and tendon
+        # slack lengths
         init_muscle_ofl = dict([(m.name, m.optimalFiberLength) for m in self.osimmodel.muscles.values()])
         init_muscle_tsl = dict([(m.name, m.tendonSlackLength) for m in self.osimmodel.muscles.values()])
         
-        # prescale and scale muscles
+        # prescale muscles to save their unscaled lengths
         self.prescale_muscles()
 
+        # for debugging: get pre-scaled muscle optimal fibre lengths and tendon
+        # slack lengths. Should not have changed
         prescale_muscle_ofl = dict([(m.name, m.optimalFiberLength) for m in self.osimmodel.muscles.values()])
         prescale_muscle_tsl = dict([(m.name, m.tendonSlackLength) for m in self.osimmodel.muscles.values()])
 
@@ -1035,12 +1039,15 @@ class Gait2392GeomCustomiser(object):
         self.cust_osim_ankle_r()
         self.cust_osim_torso()
 
-        # post-scale muscles
+        # post-scale muscles to calculate their scaled lengths
         self.postscale_muscles()
 
+        # for debugging: get scaled muscle optimal fibre lengths and tendon
+        # slack lengths
         postscale_muscle_ofl = dict([(m.name, m.optimalFiberLength) for m in self.osimmodel.muscles.values()])
         postscale_muscle_tsl = dict([(m.name, m.tendonSlackLength) for m in self.osimmodel.muscles.values()])
 
+        # for debugging: print out OFL and TSL changes through scaling
         for mn in sorted(self.osimmodel.muscles.keys()):
             print('{} OFL: {:8.6f} -> {:8.6f} -> {:8.6f}'.format(
                 mn, 
@@ -1058,8 +1065,10 @@ class Gait2392GeomCustomiser(object):
                 )
             )
 
+        # scale default markerset and add to model
         self.add_markerset()
 
+        # write .osim file
         if self.config['write_osim_file']:
             self.write_cust_osim_model()
 
