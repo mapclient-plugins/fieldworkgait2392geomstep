@@ -1039,6 +1039,9 @@ class Gait2392GeomCustomiser(object):
         self.cust_osim_ankle_r()
         self.cust_osim_torso()
 
+        # normalise the mass of each body against total subject mass (if provided)
+        self.normalise_mass()
+
         # post-scale muscles to calculate their scaled lengths
         self.postscale_muscles()
 
@@ -1048,22 +1051,24 @@ class Gait2392GeomCustomiser(object):
         postscale_muscle_tsl = dict([(m.name, m.tendonSlackLength) for m in self.osimmodel.muscles.values()])
 
         # for debugging: print out OFL and TSL changes through scaling
-        for mn in sorted(self.osimmodel.muscles.keys()):
-            print('{} OFL: {:8.6f} -> {:8.6f} -> {:8.6f}'.format(
-                mn, 
-                init_muscle_ofl[mn],
-                prescale_muscle_ofl[mn],
-                postscale_muscle_ofl[mn]
+        if self.verbose:
+            print('\nSCALED MUSCLE FIBRE PROPERTIES')
+            for mn in sorted(self.osimmodel.muscles.keys()):
+                print('{} OFL: {:8.6f} -> {:8.6f} -> {:8.6f}'.format(
+                    mn, 
+                    init_muscle_ofl[mn],
+                    prescale_muscle_ofl[mn],
+                    postscale_muscle_ofl[mn]
+                    )
                 )
-            )
-        for mn in sorted(self.osimmodel.muscles.keys()):
-            print('{} TSL: {:8.6f} -> {:8.6f} -> {:8.6f}'.format(
-                mn, 
-                init_muscle_tsl[mn],
-                prescale_muscle_tsl[mn],
-                postscale_muscle_tsl[mn]
+            for mn in sorted(self.osimmodel.muscles.keys()):
+                print('{} TSL: {:8.6f} -> {:8.6f} -> {:8.6f}'.format(
+                    mn, 
+                    init_muscle_tsl[mn],
+                    prescale_muscle_tsl[mn],
+                    postscale_muscle_tsl[mn]
+                    )
                 )
-            )
 
         # scale default markerset and add to model
         self.add_markerset()
@@ -1160,6 +1165,33 @@ class Gait2392GeomCustomiser(object):
             self.markerset.adoptAndAppend(new_marker._osimMarker)
 
         self.osimmodel._model.replaceMarkerSet(self._osimmodel_init_state, self.markerset)
+
+    def normalise_mass(self):
+        """
+        Normalises the mass of each body so that total mass equals the given total mass.
+        Doesn't do anything if config['subject_mass'] is None.
+        """
+
+        if self.config.get('subject_mass') is None:
+            return
+
+        # calculate scaling factors for masses
+        target_mass = float(self.config['subject_mass'])
+        total_mass_0 = np.sum([float(b.mass) for b in self.osimmodel.bodies.values()])
+        mass_scaling = target_mass/total_mass_0
+
+        # scale mass for each body
+        for b in self.osimmodel.bodies.values():
+            b.mass = b.mass*mass_scaling
+
+        total_mass_1= np.sum([float(b.mass) for b in self.osimmodel.bodies.values()])
+
+        if self.verbose:
+            print('\nNORMALISING BODY MASSES')
+            print('Target Mass: {} kg'.format(target_mass))
+            print('Unnormalised Mass: {} kg'.format(total_mass_0))
+            print('Normalised Mass: {} kg'.format(total_mass_1))
+
 
 def _get_foot_muscles(model, side):
     """

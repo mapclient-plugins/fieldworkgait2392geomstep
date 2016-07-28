@@ -38,6 +38,8 @@ class ConfigureDialog(QtGui.QDialog):
             self._ui.comboBox_in_unit.addItem(s)
             self._ui.comboBox_out_unit.addItem(s)
 
+        self._ui.lineEdit_subject_mass.setValidator(QtGui.QDoubleValidator())
+
     def _makeConnections(self):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
         self._ui.lineEdit_osim_output_dir.textChanged.connect(self._osimOutputDirEdited)
@@ -95,6 +97,12 @@ class ConfigureDialog(QtGui.QDialog):
         config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
         config['in_unit'] = self._ui.comboBox_in_unit.currentText()
         config['out_unit'] = self._ui.comboBox_out_unit.currentText()
+        
+        subject_mass = str(self._ui.lineEdit_subject_mass.text())
+        if len(subject_mass)==0 or (subject_mass is None):
+            config['subject_mass'] = None
+        else:
+            config['subject_mass'] = float(subject_mass)
 
         if self._ui.checkBox_write_osim_file.isChecked():
             config['write_osim_file'] = True
@@ -134,6 +142,8 @@ class ConfigureDialog(QtGui.QDialog):
                 config['out_unit']
                 )
             )
+        if config['subject_mass'] is not None:
+            self._ui.lineEdit_subject_mass.setText(str(config['subject_mass']))
 
         if config['write_osim_file']:
             self._ui.checkBox_write_osim_file.setChecked(bool(True))
