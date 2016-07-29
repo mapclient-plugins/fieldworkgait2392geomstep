@@ -352,6 +352,7 @@ class Gait2392GeomCustomiser(object):
     def init_osim_model(self):
         self.osimmodel = osim.Model(TEMPLATE_OSIM_PATH)
         self._osimmodel_init_state = self.osimmodel._model.initSystem()
+        self._original_segment_masses = dict([(b.name, b.mass) for b in self.osimmodel.bodies.values()])
 
     def _check_geom_path(self):
         """
@@ -1175,19 +1176,38 @@ class Gait2392GeomCustomiser(object):
         if self.config.get('subject_mass') is None:
             return
 
-        # calculate scaling factors for masses
-        target_mass = float(self.config['subject_mass'])
-        total_mass_0 = np.sum([float(b.mass) for b in self.osimmodel.bodies.values()])
-        mass_scaling = target_mass/total_mass_0
-
-        # scale mass for each body
-        for b in self.osimmodel.bodies.values():
-            b.mass = b.mass*mass_scaling
-
-        total_mass_1= np.sum([float(b.mass) for b in self.osimmodel.bodies.values()])
-
         if self.verbose:
             print('\nNORMALISING BODY MASSES')
+
+        # if perserving reference model mass distribution, simply calculate a
+        # uniform scaling factor for all bodies from original and target
+        # subject mass
+        if self.config['preserve_mass_distribution'] is True:
+            if self.verbose:
+                print('Preserving mass distribution')
+            total_mass_0 = np.sum(self._original_segment_masses.values())
+            target_mass = float(self.config['subject_mass'])
+            mass_scaling = target_mass/total_mass_0
+            for bname in self._original_segment_masses:
+                b = self.osimmodel.bodies[bname]
+                b.mass = self._original_segment_masses[bname]*mass_scaling
+                if self.verbose:
+                    print('{}: {:5.2f} kg'.format(b.name, b.mass))
+        else:
+            # calculate scaling factors for each body
+            target_mass = float(self.config['subject_mass'])
+            total_mass_0 = np.sum([float(b.mass) for b in self.osimmodel.bodies.values()])
+            mass_scaling = target_mass/total_mass_0
+
+            # scale mass for each body
+            for b in self.osimmodel.bodies.values():
+                b.mass = b.mass*mass_scaling
+                if self.verbose:
+                    print('{}: {:5.2f} kg'.format(b.name, b.mass))
+
+        total_mass_1 = np.sum([float(b.mass) for b in self.osimmodel.bodies.values()])
+
+        if self.verbose:
             print('Target Mass: {} kg'.format(target_mass))
             print('Unnormalised Mass: {} kg'.format(total_mass_0))
             print('Normalised Mass: {} kg'.format(total_mass_1))

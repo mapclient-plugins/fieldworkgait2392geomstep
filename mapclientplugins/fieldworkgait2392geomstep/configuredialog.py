@@ -104,6 +104,11 @@ class ConfigureDialog(QtGui.QDialog):
         else:
             config['subject_mass'] = float(subject_mass)
 
+        if self._ui.checkBox_preserve_mass_dist.isChecked():
+            config['preserve_mass_distribution'] = True
+        else:
+            config['preserve_mass_distribution'] = False
+
         if self._ui.checkBox_write_osim_file.isChecked():
             config['write_osim_file'] = True
         else:
@@ -144,6 +149,11 @@ class ConfigureDialog(QtGui.QDialog):
             )
         if config['subject_mass'] is not None:
             self._ui.lineEdit_subject_mass.setText(str(config['subject_mass']))
+
+        if config['preserve_mass_distribution']:
+            self._ui.checkBox_preserve_mass_dist.setChecked(bool(True))
+        else:
+            self._ui.checkBox_preserve_mass_dist.setChecked(bool(False))
 
         if config['write_osim_file']:
             self._ui.checkBox_write_osim_file.setChecked(bool(True))

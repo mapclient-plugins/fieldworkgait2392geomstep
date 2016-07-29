@@ -95,6 +95,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config['osim_output_dir'] = ''
         self._config['write_osim_file'] = True
         self._config['subject_mass'] = None
+        self._config['preserve_mass_distribution'] = False
         # self._config['side'] = 'left'
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)

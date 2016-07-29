@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt/configuredialog.ui'
 #
-# Created: Thu Jul 28 12:52:18 2016
+# Created: Fri Jul 29 16:35:28 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -67,18 +67,25 @@ class Ui_Dialog(object):
         self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.checkBox_scale_other_bodies)
         self.label_11 = QtGui.QLabel(self.configGroupBox)
         self.label_11.setObjectName("label_11")
-        self.formLayout.setWidget(7, QtGui.QFormLayout.LabelRole, self.label_11)
+        self.formLayout.setWidget(8, QtGui.QFormLayout.LabelRole, self.label_11)
         self.checkBox_GUI = QtGui.QCheckBox(self.configGroupBox)
         self.checkBox_GUI.setEnabled(False)
         self.checkBox_GUI.setText("")
         self.checkBox_GUI.setObjectName("checkBox_GUI")
-        self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.checkBox_GUI)
+        self.formLayout.setWidget(8, QtGui.QFormLayout.FieldRole, self.checkBox_GUI)
         self.label_5 = QtGui.QLabel(self.configGroupBox)
         self.label_5.setObjectName("label_5")
         self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_5)
         self.lineEdit_subject_mass = QtGui.QLineEdit(self.configGroupBox)
         self.lineEdit_subject_mass.setObjectName("lineEdit_subject_mass")
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.lineEdit_subject_mass)
+        self.label_6 = QtGui.QLabel(self.configGroupBox)
+        self.label_6.setObjectName("label_6")
+        self.formLayout.setWidget(7, QtGui.QFormLayout.LabelRole, self.label_6)
+        self.checkBox_preserve_mass_dist = QtGui.QCheckBox(self.configGroupBox)
+        self.checkBox_preserve_mass_dist.setText("")
+        self.checkBox_preserve_mass_dist.setObjectName("checkBox_preserve_mass_dist")
+        self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.checkBox_preserve_mass_dist)
         self.gridLayout.addWidget(self.configGroupBox, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -110,4 +117,5 @@ class Ui_Dialog(object):
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "Scale other bodies:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_11.setText(QtGui.QApplication.translate("Dialog", "GUI:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("Dialog", "Subject Mass (kg):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("Dialog", "Preserve Mass Distribution:", None, QtGui.QApplication.UnicodeUTF8))
 
