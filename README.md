@@ -9,10 +9,10 @@ lowerlimb model.
 - Bodies
     - Mass, inertia, centre of mass : scaled according to the difference
         between the reference Gait2392 markers and markers on the input model.
-    - Mass can be normalised to given subject mass or simply scaled to given subject mass while preserving reference mass distribution.
-    - Display mesh for OpenSim visualtion are generated from the input model.
+    - Mass can be normalised to given subject mass or simply scaled to a given subject mass while preserving reference mass distribution.
+    - Display mesh for OpenSim visualisation are generated from the input model.
 - Joints
-    - Location and LocationInParent according to the position of joints in the input model.
+    - Location and LocationInParent are modified according to the position of joints in the input model.
     - Knee joint splines are customised to match the tibia trajectory with respect to knee flexion in the input model.
 - Muscles
     - Path points are **not** modified. See fieldworkgait2392musclehmfstep for a plugin for modifying path points.
@@ -42,7 +42,7 @@ Inputs
 
 Outputs
 -------
-- **opensimmodel** [opensim.Model instance] : The customised Gait2392 opensim model.
+- **osimmodel** [opensim.Model instance] : The customised Gait2392 opensim model.
 - **gias-lowerlimb** [GIAS2 LowerLimbAtlas instance]: Lowerlimb model used in the customisation.
 
 Configuration
@@ -59,11 +59,11 @@ Configuration
 Scale Factor Calculation
 ------------------------
 Orthotropic scale factors are calculated for each Gait2392 body to scale body mass and inertia parameters.
-In addition, for bodies without a corresponding GIAS2 LowerlimbAtlas model bone (torso, talus, calcaneus, toes), the scale factors are also used to scale joint locations.
+For bodies without a corresponding GIAS2 LowerlimbAtlas model bone (torso, talus, calcaneus, toes), the scale factors are also used to scale joint locations.
 
 In general, given the distance l_d between 2 default Gait2392 markers and the distance l_s between the 2 corresponding markers on the GIAS2 lowerlimb model, the scale factors is l_s/l_d.
 An offset is applied to the model landmarks to account for the difference between the reference markers which are on the skin surface, and input model markers which are on the bone surface.
-The offset for each marker was calculated by customising the GIAS2 lowerlimb model to the reference Gait2392 model and calculating the vectors from each GIAS2 model landmark to the corresponding Gait2392 marker.
+The offset for each marker was calculated by customising the GIAS2 lowerlimb model to the reference Gait2392 model and calculating the vectors from each GIAS2 model marker to the corresponding Gait2392 marker.
 
 Different markers are used to calculate the scale factors in difference bodies and in different anatomical directions.
 For each of the GIAS2 lowerlimb model bodies, their scale factors are calculated thus:
