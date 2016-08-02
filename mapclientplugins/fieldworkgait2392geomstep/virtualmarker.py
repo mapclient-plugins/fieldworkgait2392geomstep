@@ -42,7 +42,7 @@ def _load_virtual_markers():
     markers = {}
     marker_coords = {}
 
-    if opensim_version=='4.0':
+    if opensim_version==4.0:
         _dummy_model = opensim.Model()
         _osim_markerset = opensim.MarkerSet(_dummy_model, MARKERSET_PATH)
     else:
