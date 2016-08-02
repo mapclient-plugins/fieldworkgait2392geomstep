@@ -83,4 +83,8 @@ For each of the GIAS2 lowerlimb model bodies, their scale factors are calculated
     
 Torso, talus, calcaneus, and toe scaling factors are the average of the scaling factors for the three bodies above.
 
-
+Todo List
+---------
+- Receive landmarks as inputs so that
+    - scaling factors can be calculated between reference skin surface markers and experimental skin surface markers without need to apply offset to customised model's bone-surface landmarks.
+    - Output osim model's model markers can be adjusted to their corresponding input marker positions 
