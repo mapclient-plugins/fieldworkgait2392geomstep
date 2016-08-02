@@ -11,6 +11,10 @@ from gias2.musculoskeletal.osim import Marker
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 MARKERSET_PATH = str(os.path.join(SELF_DIR, 'data', 'gait2392_Scale_MarkerSet.xml'))
 MARKER_OFFSET_PATH = str(os.path.join(SELF_DIR, 'data/', 'marker_offsets.dat'))
+try:
+    opensim_version = getattr(opensim, '__version__')
+except AttributeError:
+    opensim_version = None
 
 # dictionary mapping fieldwork landmark names to gait2392's virtual marker
 # names
@@ -37,7 +41,13 @@ marker_name_map = {
 def _load_virtual_markers():
     markers = {}
     marker_coords = {}
-    _osim_markerset = opensim.MarkerSet(MARKERSET_PATH)
+
+    if opensim_version=='4.0':
+        _dummy_model = opensim.Model()
+        _osim_markerset = opensim.MarkerSet(_dummy_model, MARKERSET_PATH)
+    else:
+        _osim_markerset = opensim.MarkerSet(MARKERSET_PATH)
+
     for mi in range(_osim_markerset.getSize()):
         osim_marker = _osim_markerset.get(mi)
 
