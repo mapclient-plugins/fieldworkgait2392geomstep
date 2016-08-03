@@ -13,7 +13,11 @@ lowerlimb model.
     - Display mesh for OpenSim visualisation are generated from the input model.
 - Joints
     - Location and LocationInParent are modified according to the position of joints in the input model.
-    - Knee joint splines are customised to match the tibia trajectory with respect to knee flexion in the input model.
+    - Knee joint splines are customised to match the tibia trajectory with respect to knee flexion in the input model.h
+- Markers
+    - The default Gait2392 markerset is customised based on a combination of model landmark position and linear scaling.
+    - Markers that correspond to GIAS2 model landmarks are assign the model landmark positions with soft-tissue offset.
+    - Markers without correspondences are linearly scaled according their respective body's scale factors.
 - Muscles
     - Path points are **not** modified. See fieldworkgait2392musclehmfstep for a plugin for modifying path points.
     - Wrapping objects are **not** supported.
@@ -44,6 +48,12 @@ Outputs
 -------
 - **osimmodel** [opensim.Model instance] : The customised Gait2392 opensim model.
 - **gias-lowerlimb** [GIAS2 LowerLimbAtlas instance]: Lowerlimb model used in the customisation.
+
+Usage
+-----
+This step is intended to customise the Gait2392 OpenSim lower limb model to match the geometry of an input lower limb model from the _Fieldwork Lowerlimb 2-side Generation Step_. This step only customises the the properties of the Bodies and Joints in Gait2392. The output opensim Model will still have the original muscle geometries and properties.
+
+This step does not have a workflow-runtime GUI. It will simply attempt to perform the customisations automatically based on its configurations.
 
 Configuration
 -------------
