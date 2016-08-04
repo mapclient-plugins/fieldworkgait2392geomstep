@@ -78,6 +78,9 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#landmarks'))
+        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
                       'ju#fieldworkmodeldict'))
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
@@ -96,7 +99,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config['write_osim_file'] = True
         self._config['subject_mass'] = None
         self._config['preserve_mass_distribution'] = False
-        # self._config['side'] = 'left'
+        self._config['adj_marker_pairs'] = {}
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)
         self.inputModels = None
@@ -125,6 +128,8 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         '''
         if index == 0:
             self.inputLLAtlas = dataIn # gias-lowerlimb
+        elif index == 1:
+            self._g2392Cust.input_markers = dataIn
         else:
             self.inputModels = dataIn # ju#fieldworkmodeldict
 
@@ -134,7 +139,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         The index is the index of the port in the port list.  If there is only one
         provides port for this step then the index can be ignored.
         '''
-        if index==2:
+        if index==3:
             return self._g2392Cust.osimmodel._model
         else:
             return self._g2392Cust.LL

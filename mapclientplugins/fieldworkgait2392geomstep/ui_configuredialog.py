@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt/configuredialog.ui'
 #
-# Created: Fri Jul 29 16:35:28 2016
+# Created: Thu Aug  4 14:54:10 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(597, 334)
+        Dialog.resize(639, 543)
         self.gridLayout = QtGui.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.configGroupBox = QtGui.QGroupBox(Dialog)
@@ -67,12 +67,12 @@ class Ui_Dialog(object):
         self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.checkBox_scale_other_bodies)
         self.label_11 = QtGui.QLabel(self.configGroupBox)
         self.label_11.setObjectName("label_11")
-        self.formLayout.setWidget(8, QtGui.QFormLayout.LabelRole, self.label_11)
+        self.formLayout.setWidget(9, QtGui.QFormLayout.LabelRole, self.label_11)
         self.checkBox_GUI = QtGui.QCheckBox(self.configGroupBox)
         self.checkBox_GUI.setEnabled(False)
         self.checkBox_GUI.setText("")
         self.checkBox_GUI.setObjectName("checkBox_GUI")
-        self.formLayout.setWidget(8, QtGui.QFormLayout.FieldRole, self.checkBox_GUI)
+        self.formLayout.setWidget(9, QtGui.QFormLayout.FieldRole, self.checkBox_GUI)
         self.label_5 = QtGui.QLabel(self.configGroupBox)
         self.label_5.setObjectName("label_5")
         self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_5)
@@ -86,6 +86,32 @@ class Ui_Dialog(object):
         self.checkBox_preserve_mass_dist.setText("")
         self.checkBox_preserve_mass_dist.setObjectName("checkBox_preserve_mass_dist")
         self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.checkBox_preserve_mass_dist)
+        self.label_7 = QtGui.QLabel(self.configGroupBox)
+        self.label_7.setObjectName("label_7")
+        self.formLayout.setWidget(8, QtGui.QFormLayout.LabelRole, self.label_7)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.tableWidgetLandmarks = QtGui.QTableWidget(self.configGroupBox)
+        self.tableWidgetLandmarks.setObjectName("tableWidgetLandmarks")
+        self.tableWidgetLandmarks.setColumnCount(2)
+        self.tableWidgetLandmarks.setRowCount(0)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidgetLandmarks.setHorizontalHeaderItem(0, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidgetLandmarks.setHorizontalHeaderItem(1, item)
+        self.tableWidgetLandmarks.horizontalHeader().setDefaultSectionSize(200)
+        self.tableWidgetLandmarks.horizontalHeader().setMinimumSectionSize(200)
+        self.verticalLayout.addWidget(self.tableWidgetLandmarks)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.pushButton_addLandmark = QtGui.QPushButton(self.configGroupBox)
+        self.pushButton_addLandmark.setObjectName("pushButton_addLandmark")
+        self.horizontalLayout_2.addWidget(self.pushButton_addLandmark)
+        self.pushButton_removeLandmark = QtGui.QPushButton(self.configGroupBox)
+        self.pushButton_removeLandmark.setObjectName("pushButton_removeLandmark")
+        self.horizontalLayout_2.addWidget(self.pushButton_removeLandmark)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.formLayout.setLayout(8, QtGui.QFormLayout.FieldRole, self.verticalLayout)
         self.gridLayout.addWidget(self.configGroupBox, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -103,7 +129,12 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.comboBox_in_unit, self.comboBox_out_unit)
         Dialog.setTabOrder(self.comboBox_out_unit, self.checkBox_write_osim_file)
         Dialog.setTabOrder(self.checkBox_write_osim_file, self.checkBox_scale_other_bodies)
-        Dialog.setTabOrder(self.checkBox_scale_other_bodies, self.checkBox_GUI)
+        Dialog.setTabOrder(self.checkBox_scale_other_bodies, self.lineEdit_subject_mass)
+        Dialog.setTabOrder(self.lineEdit_subject_mass, self.checkBox_preserve_mass_dist)
+        Dialog.setTabOrder(self.checkBox_preserve_mass_dist, self.tableWidgetLandmarks)
+        Dialog.setTabOrder(self.tableWidgetLandmarks, self.pushButton_addLandmark)
+        Dialog.setTabOrder(self.pushButton_addLandmark, self.pushButton_removeLandmark)
+        Dialog.setTabOrder(self.pushButton_removeLandmark, self.checkBox_GUI)
         Dialog.setTabOrder(self.checkBox_GUI, self.buttonBox)
 
     def retranslateUi(self, Dialog):
@@ -118,4 +149,9 @@ class Ui_Dialog(object):
         self.label_11.setText(QtGui.QApplication.translate("Dialog", "GUI:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("Dialog", "Subject Mass (kg):", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("Dialog", "Preserve Mass Distribution:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("Dialog", "Adjustable Markers:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidgetLandmarks.horizontalHeaderItem(0).setText(QtGui.QApplication.translate("Dialog", "Model Markers", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidgetLandmarks.horizontalHeaderItem(1).setText(QtGui.QApplication.translate("Dialog", "Input Markers", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_addLandmark.setText(QtGui.QApplication.translate("Dialog", "Add Marker Pair", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_removeLandmark.setText(QtGui.QApplication.translate("Dialog", "Remove Marker Pair", None, QtGui.QApplication.UnicodeUTF8))
 

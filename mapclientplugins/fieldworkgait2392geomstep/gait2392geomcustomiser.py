@@ -76,6 +76,8 @@ FIBULA_RIGHT_FILENAME = 'r_fibula.vtp'
 VALID_UNITS = ('nm', 'um', 'mm', 'cm', 'm', 'km')
 # SIDES = ('left', 'right', 'both')
 
+VALID_MODEL_MARKERS = sorted(list(scaler.virtualmarker.markers.keys()))
+
 #=============================================================================#
 def dim_unit_scaling(in_unit, out_unit):
     """
@@ -328,15 +330,16 @@ class Gait2392GeomCustomiser(object):
         # self._pelvisRigid = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         # self._hipRot = np.array([0.0, 0.0, 0.0])
         # self._kneeRot = np.array([0.0, 0.0, 0.0])
-        self.uniformScaling = 1.0
-        self.pelvisScaling = 1.0
-        self.femurScaling = 1.0
-        self.petallaScaling = 1.0
-        self.tibfibScaling = 1.0
+        self.uniform_scaling = 1.0
+        self.pelvis_scaling = 1.0
+        self.femur_scaling = 1.0
+        self.petalla_scaling = 1.0
+        self.tibfib_scaling = 1.0
         self.LL = None  # lowerlimb object
         self._hasInputLL = False 
         self.osimmodel = None  # opensim model
         self.markerset = None  # markerset associated with opensim model
+        self.input_markers = {} # input marker name : input marker coords
         self.verbose = verbose
         self._unit_scaling = dim_unit_scaling(
                                 self.config['in_unit'], self.config['out_unit']
@@ -1109,11 +1112,20 @@ class Gait2392GeomCustomiser(object):
             )
         self.osimmodel.scale(self._osimmodel_init_state, *model_sfs)
         return model_sfs
-
+    
     def add_markerset(self):
         """
         Add the default 2392 markerset to the customised osim model
-        with customised marker positions
+        with customised marker positions.
+
+        Markers in config['adj_marker_pairs'].keys() are placed in their
+        corresponding input markers position.
+
+        Else markers with bony landmark equivalents on the fieldwork model
+        are assign the model landmarks with offset.
+
+        Markers not matching the two above criteria are scaled according their
+        body's scale factors.
         """
         vm = scaler.virtualmarker
         g2392_markers = vm._load_virtual_markers()[0]
@@ -1121,20 +1133,33 @@ class Gait2392GeomCustomiser(object):
         osim2fw_markernames = dict([(it[1], it[0]) for it in vm.marker_name_map.items()])
         osim2fw_bodynames = dict([(it[1], it[0]) for it in OSIM_BODY_NAME_MAP.items()])
 
-        def _local_coords(bodyname, landmarkname):
+        adj_marker_pairs = self.config['adj_marker_pairs']
+        if adj_marker_pairs is None:
+            adj_marker_pairs = {}
+        adj_model_marker_names = set(list(adj_marker_pairs.keys()))
+        print('adj model markers:')
+        for mm, mi in adj_marker_pairs.items():
+            print('{} : {}'.format(mm,mi))
+
+        def _local_coords(bodyname, landmarkname, global_coord=None, apply_offset=True):
             """
             Returns the local coordinates of a landmark
             """
-            if landmarkname[-2:] in ('-l', '-r'):
-                _landmarkname = landmarkname[:-2]
-            else:
-                _landmarkname = landmarkname
-            global_coord = self.LL.models[bodyname].landmarks[_landmarkname]
+            if global_coord is None:
+                if landmarkname[-2:] in ('-l', '-r'):
+                    _landmarkname = landmarkname[:-2]
+                else:
+                    _landmarkname = landmarkname
+                global_coord = self.LL.models[bodyname].landmarks[_landmarkname]
+
             local_coords = self.LL.models[bodyname].acs.map_local(
                 global_coord[np.newaxis,:]
                 ).squeeze()
-            local_offset_coords = self._unit_scaling*(local_coords + vm.marker_offsets[landmarkname])
-            return local_offset_coords
+
+            if apply_offset:
+                return self._unit_scaling*(local_coords + vm.marker_offsets[landmarkname])
+            else:
+                return self._unit_scaling*local_coords
 
         def _scale_marker(marker):
             """
@@ -1146,17 +1171,43 @@ class Gait2392GeomCustomiser(object):
 
         self.markerset = opensim.MarkerSet()
         for osim_marker_name, marker0 in g2392_markers.items():
-            if osim_marker_name in osim2fw_markernames:
-                # if maker has fw equivalent:
+            new_offset = None
+
+            # if define, adjust marker position to input marker
+            if osim_marker_name in adj_model_marker_names:
+                # move marker to input marker coordinates
                 fw_body_name = osim2fw_bodynames[marker0.bodyName]
-                fw_landmark_name = osim2fw_markernames[osim_marker_name]
-                new_offset = _local_coords(
-                    fw_body_name,
-                    fw_landmark_name,
-                    )
-            else:
-                # else scale default
-                new_offset = _scale_marker(marker0)
+                input_marker_name = adj_marker_pairs[osim_marker_name]
+                input_marker_coords = self.input_markers.get(input_marker_name)
+                if input_marker_coords is None:
+                    print(
+                        'WARNING: {} not found in input markers. {} will not be adjusted.'.format(
+                            input_marker_name, osim_marker_name
+                            )
+                        )
+                else:
+                    new_offset = _local_coords(
+                        fw_body_name,
+                        None,
+                        global_coord=input_marker_coords,
+                        apply_offset=False
+                        )
+            
+            # if new marker position has not been defined by adjustment, then either set
+            # as bony landmark coord or scale
+            if new_offset is None:
+                if osim_marker_name in osim2fw_markernames:
+                    # if maker has fw equivalent move marker to fw landmark position with offset
+                    fw_body_name = osim2fw_bodynames[marker0.bodyName]
+                    fw_landmark_name = osim2fw_markernames[osim_marker_name]
+                    new_offset = _local_coords(
+                        fw_body_name,
+                        fw_landmark_name,
+                        apply_offset=True,
+                        )
+                else:
+                    # else scale default
+                    new_offset = _scale_marker(marker0)
 
             new_marker = osim.Marker(
                 bodyname=marker0.bodyName,

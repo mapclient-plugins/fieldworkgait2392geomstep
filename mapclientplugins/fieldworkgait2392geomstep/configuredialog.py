@@ -2,7 +2,9 @@
 import os
 from PySide import QtGui
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
-from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS
+from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS, VALID_MODEL_MARKERS
+from mapclientplugins.fieldworkgait2392geomstep.landmarktablewidget import LandmarkComboBoxTextTable
+
 
 INVALID_STYLE_SHEET = 'background-color: rgba(239, 0, 0, 50)'
 DEFAULT_STYLE_SHEET = ''
@@ -30,6 +32,12 @@ class ConfigureDialog(QtGui.QDialog):
         # We will use this method to decide whether the identifier is unique.
         self.identifierOccursCount = None
 
+        # table of model and input marker pairs
+        self.markerTable = LandmarkComboBoxTextTable(
+                                VALID_MODEL_MARKERS,
+                                self._ui.tableWidgetLandmarks,
+                                )
+
         self._setupDialog()
         self._makeConnections()
 
@@ -44,6 +52,8 @@ class ConfigureDialog(QtGui.QDialog):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
         self._ui.lineEdit_osim_output_dir.textChanged.connect(self._osimOutputDirEdited)
         self._ui.pushButton_osim_output_dir.clicked.connect(self._osimOutputDirClicked)
+        self._ui.pushButton_addLandmark.clicked.connect(self.markerTable.addLandmark)
+        self._ui.pushButton_removeLandmark.clicked.connect(self.markerTable.removeLandmark)
 
     def accept(self):
         '''
@@ -97,6 +107,9 @@ class ConfigureDialog(QtGui.QDialog):
         config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
         config['in_unit'] = self._ui.comboBox_in_unit.currentText()
         config['out_unit'] = self._ui.comboBox_out_unit.currentText()
+        config['adj_marker_pairs'] = self.markerTable.getLandmarkPairs()
+        print('DING')
+        print(config['adj_marker_pairs'])
         
         subject_mass = str(self._ui.lineEdit_subject_mass.text())
         if len(subject_mass)==0 or (subject_mass is None):
@@ -147,6 +160,10 @@ class ConfigureDialog(QtGui.QDialog):
                 config['out_unit']
                 )
             )
+
+        for mm, im in sorted(config['adj_marker_pairs'].items()):
+            self.markerTable.addLandmark(mm, im)
+
         if config['subject_mass'] is not None:
             self._ui.lineEdit_subject_mass.setText(str(config['subject_mass']))
 
