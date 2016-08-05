@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt/configuredialog.ui'
 #
-# Created: Thu Aug  4 14:54:10 2016
+# Created: Fri Aug  5 14:33:42 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(639, 543)
+        Dialog.resize(639, 611)
         self.gridLayout = QtGui.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.configGroupBox = QtGui.QGroupBox(Dialog)
@@ -92,6 +92,11 @@ class Ui_Dialog(object):
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.tableWidgetLandmarks = QtGui.QTableWidget(self.configGroupBox)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tableWidgetLandmarks.sizePolicy().hasHeightForWidth())
+        self.tableWidgetLandmarks.setSizePolicy(sizePolicy)
         self.tableWidgetLandmarks.setObjectName("tableWidgetLandmarks")
         self.tableWidgetLandmarks.setColumnCount(2)
         self.tableWidgetLandmarks.setRowCount(0)

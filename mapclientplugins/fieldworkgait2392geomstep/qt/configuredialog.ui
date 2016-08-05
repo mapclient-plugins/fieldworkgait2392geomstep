@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>639</width>
-    <height>543</height>
+    <height>611</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -154,6 +154,12 @@
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QTableWidget" name="tableWidgetLandmarks">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <attribute name="horizontalHeaderDefaultSectionSize">
            <number>200</number>
           </attribute>
