@@ -516,9 +516,13 @@ class Gait2392GeomCustomiser(object):
         #         )
         sf = self._get_osimbody_scale_factors('pelvis')
         scaler.scale_body_mass_inertia(osim_pelvis, sf)
+        
+        #scale wrapping surfaces
+		scaler.scale_wrapping_objects(osim_pelvis, sf)
+		
         if self.verbose:
             print('scale factor: {}'.format(sf))
-
+		
         # update ground-pelvis joint
         if self.verbose:
             print('updating pelvis-ground joint...')

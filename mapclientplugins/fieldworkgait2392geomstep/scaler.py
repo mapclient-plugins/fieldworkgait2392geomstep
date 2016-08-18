@@ -272,6 +272,24 @@ def scale_body_mass_inertia(body, sf, scaledisplay=True):
 
     return body
 
+def scale_wrapping_objects(body, sf):
+	"""
+	Scale the wrapping objects using the same scale factors used to scale the body
+	the wrapping objects are associated with
+	"""
+
+	wrapObjects = body._osimBody.getWrapObjectSet()
+	for i in range(wrapObjects.getSize()):
+		wrapObject = wrapObjects.get(i).getName()
+		old_radii = body._osimBody.getWrapObject(wrapObject).getDimensionsString()
+		body.scaleWrapObject(wrapObject, sf)
+		new_radii = body._osimBody.getWrapObject(wrapObject).getDimensionsString()
+		
+		print('wrapping object {}: {} -> {}'.format(wrapObject, old_radii, new_radii))
+	
+	return body
+
+
 def scale_joint(joint, sfs, bodies):
     """
     Scales a joints properties according to a 3-tuple of scale factors.
