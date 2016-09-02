@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys, os
 
 setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
-      version='0.1',
+      version='0.1.0',
       description='',
       long_description="",
       classifiers=[],
