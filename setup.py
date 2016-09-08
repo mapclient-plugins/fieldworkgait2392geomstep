@@ -33,7 +33,7 @@ license = readfile("LICENSE")
 package_data = {
   u'mapclientplugins.fieldworkgait2392geomstep': [
     'mapclientplugins/fieldworkgait2392geomstep/data/*',
-  ]
+  ],
 }
 
 
