@@ -31,7 +31,7 @@ readme = readfile("README.md", split=True)[3:]  # skip title
 requires = readfile("requirements.txt", split=True)
 license = readfile("LICENSE")
 package_data = {
-  u'mapclientplugins.fieldworkgait2392geomstep': [
+  'mapclientplugins.fieldworkgait2392geomstep': [
     'mapclientplugins/fieldworkgait2392geomstep/data/*',
   ],
 }
