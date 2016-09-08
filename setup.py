@@ -30,6 +30,12 @@ def readfile(filename, split=False):
 readme = readfile("README.md", split=True)[3:]  # skip title
 requires = readfile("requirements.txt", split=True)
 license = readfile("LICENSE")
+package_data = {
+  u'mapclientplugins.fieldworkgait2392geomstep': [
+    'mapclientplugins/fieldworkgait2392geomstep/data/*',
+  ]
+}
+
 
 setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
     version='0.1.1',
@@ -49,4 +55,5 @@ setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      include_package_data=package_data,
       )
