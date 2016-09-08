@@ -32,7 +32,7 @@ requires = readfile("requirements.txt", split=True)
 license = readfile("LICENSE")
 package_data = {
   'mapclientplugins.fieldworkgait2392geomstep': [
-    'mapclientplugins/fieldworkgait2392geomstep/data/*',
+    'fieldworkgait2392geomstep/data/*',
   ],
 }
 
