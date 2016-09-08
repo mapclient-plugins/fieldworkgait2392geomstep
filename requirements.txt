@@ -1,2 +1,1 @@
 transforms3d
-git+https://jangle@bitbucket.org/jangle/gias2.git#egg=gias2
