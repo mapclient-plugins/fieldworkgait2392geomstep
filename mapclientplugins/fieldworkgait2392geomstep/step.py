@@ -132,6 +132,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
             self._g2392Cust.input_markers = dataIn
         else:
             self.inputModels = dataIn # ju#fieldworkmodeldict
+            print(self.inputModels)
 
     def getPortData(self, index):
         '''

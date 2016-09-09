@@ -418,8 +418,12 @@ class Gait2392GeomCustomiser(object):
         Instantiate the lower limb object using input models
         """
 
+        print('setting lower limb fieldwork models')
+        print(gfieldsdict.keys())
+
         # left
         if not self._hasInputLL:
+            print('creating new left lowerlimb model')
             ll_l = bonemodels.LowerLimbLeftAtlas('left lower limb')
             ll_l.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
             ll_l.set_bone_gfield('femur', gfieldsdict['femur-l'])
@@ -428,12 +432,16 @@ class Gait2392GeomCustomiser(object):
         else:
             ll_l = self.LL.ll_l
             if 'pelvis' in gfieldsdict:
+                print('setting custom pelvis (l)')
                 ll_l.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
             if 'femur-l' in gfieldsdict:
+                print('setting custom femur-l')
                 ll_l.set_bone_gfield('femur', gfieldsdict['femur-l'])
             if 'patella-l' in gfieldsdict:
+                print('setting custom patella-l')
                 ll_l.set_bone_gfield('patella', gfieldsdict['patella-l'])
             if 'tibiafibula-l' in gfieldsdict:
+                print('setting custom tibiafibula-l')
                 ll_l.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-l'])
 
         update_femur_opensim_acs(ll_l.models['femur'])
@@ -441,6 +449,7 @@ class Gait2392GeomCustomiser(object):
 
         # right
         if not self._hasInputLL:
+            print('creating new right lowerlimb model')
             ll_r = bonemodels.LowerLimbLeftAtlas('right lower limb')
             ll_r.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
             ll_r.set_bone_gfield('femur', gfieldsdict['femur-r'])
@@ -449,12 +458,16 @@ class Gait2392GeomCustomiser(object):
         else:
             ll_r = self.LL.ll_r
             if 'pelvis' in gfieldsdict:
+                print('setting custom pelvis (r)')
                 ll_r.set_bone_gfield('pelvis', gfieldsdict['pelvis'])
             if 'femur-r' in gfieldsdict:
+                print('setting custom femur-r')
                 ll_r.set_bone_gfield('femur', gfieldsdict['femur-r'])
             if 'patella-r' in gfieldsdict:
+                print('setting custom patella-r')
                 ll_r.set_bone_gfield('patella', gfieldsdict['patella-r'])
             if 'tibiafibula-r' in gfieldsdict:
+                print('setting custom tibiafibula-r')
                 ll_r.set_bone_gfield('tibiafibula', gfieldsdict['tibiafibula-r'])
         
         update_femur_opensim_acs(ll_r.models['femur'])
