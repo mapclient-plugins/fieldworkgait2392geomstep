@@ -978,6 +978,20 @@ class Gait2392GeomCustomiser(object):
                     )
                 )
 
+        # scale visual geometry
+        scaler.scale_body_visual_geometry(
+            self.osimmodel.bodies['talus_{}'.format(side)],
+            self._get_osimbody_scale_factors('talus_{}'.format(side))
+            )
+        scaler.scale_body_visual_geometry(
+            self.osimmodel.bodies['calcn_{}'.format(side)],
+            self._get_osimbody_scale_factors('calcn_{}'.format(side))
+            )
+        scaler.scale_body_visual_geometry(
+            self.osimmodel.bodies['toes_{}'.format(side)],
+            self._get_osimbody_scale_factors('toes_{}'.format(side))
+            )
+
     def cust_osim_torso(self):
         if self.verbose:
             print('\nCUSTOMISING TORSO')
@@ -1017,6 +1031,11 @@ class Gait2392GeomCustomiser(object):
                     self.osimmodel.joints['back'].locationInParent
                     )
                 )
+
+        # scale visual geometry
+        scaler.scale_body_visual_geometry(
+            self.osimmodel.bodies['torso'], sf
+            )
 
     def write_cust_osim_model(self):
         self.osimmodel.save(

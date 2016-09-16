@@ -13,7 +13,7 @@ lowerlimb model.
     - Display mesh for OpenSim visualisation are generated from the input model.
 - Joints
     - Location and LocationInParent are modified according to the position of joints in the input model.
-    - Knee joint splines are customised to match the tibia trajectory with respect to knee flexion in the input model.h
+    - Knee joint splines are customised to match the tibia trajectory with respect to knee flexion in the input model.
 - Markers
     - The default Gait2392 markerset is customised based on a combination of model landmark position and linear scaling.
     - Markers that correspond to GIAS2 model landmarks are assign the model landmark positions with soft-tissue offset.
@@ -24,11 +24,12 @@ lowerlimb model.
     - Wrapping objects are **not** supported.
     - Tendon slack lengths and optimal fibre lengths are updated to reflect new joint positions.
     
-Body and Joint parameters of bodies not in the GIAS2 lowerlimb model (torso, talus, calcaneus, toes) are scale by the average scale factor of the model bodies. See the Scale Factor Calculation section more detail about how scale factors are calculated.
+Body and Joint parameters and display models of bodies not in the GIAS2 lowerlimb model (torso, talus, calcaneus, toes) are scale by the average scale factor of the model bodies. See the Scale Factor Calculation section more detail about how scale factors are calculated.
 
 Requires
 --------
 - GIAS2: https://bitbucket.org/jangle/gias2
+- OpenSim 3.3: https://simtk.org/frs/?group_id=91
 - MAP Client: https://github.com/MusculoskeletalAtlasProject/mapclient
 
 Inputs

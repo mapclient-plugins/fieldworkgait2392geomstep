@@ -221,7 +221,7 @@ def _get_segments_muscles(model, segnames):
 
     return seg_muscles
 
-def scale_body_mass_inertia(body, sf, scaledisplay=True):
+def scale_body_mass_inertia(body, sf):
     """
     Scales a body's inertial and mass properties according to a
     3-tuple of scale factors. Uses body scaling to calculate the
@@ -261,10 +261,6 @@ def scale_body_mass_inertia(body, sf, scaledisplay=True):
     body.mass = new_mass
     body.massCenter = new_mass_center
     body.inertia = new_inertia
-
-    # scale display model
-    if scaledisplay:
-        pass
 
     print('mass: {} -> {}'.format(old_mass, new_mass))
     print('mass_center: {} -> {}'.format(old_mass_center, new_mass_center))
@@ -481,3 +477,12 @@ def calc_scale_factors_all_bodies(LL, unit_scaling, scale_other_bodies=True):
             )
 
     return sf_list
+
+def scale_body_visual_geometry(body, sf):
+
+    _sf = osim.opensim.Vec3(sf[0], sf[1], sf[2])
+    gset = body._osimBody.getDisplayer().getGeometrySet()
+    for gi in range(gset.getSize()):
+        g = gset.get(gi)
+        g.setScaleFactors(_sf)
+
