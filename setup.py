@@ -38,7 +38,7 @@ package_data = {
 
 
 setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
-    version='0.1.1',
+    version='0.1.2',
     description='',
     long_description='\n'.join(readme) + license,
     classifiers=[
