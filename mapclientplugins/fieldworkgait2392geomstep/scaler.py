@@ -8,9 +8,10 @@ distances between landmarks/markers on the customised geometry and default
 
 import numpy as np
 from numpy.linalg import inv
-import virtualmarker
 from gias2.musculoskeletal import osim
 from gias2.common import math
+
+from mapclientplugins.fieldworkgait2392geomstep import virtualmarker
 
 def _dist(x1, x2):
     return np.sqrt(((x1-x2)**2.0).sum(-1))
