@@ -38,7 +38,7 @@ from gias2.musculoskeletal import fw_model_landmarks as fml
 from transforms3d.euler import mat2euler
 
 import opensim
-import scaler
+from mapclientplugins.fieldworkgait2392geomstep import scaler
 
 #=============================================================================#
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
