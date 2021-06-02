@@ -18,8 +18,7 @@ This file is part of MAP Client. (http://launchpad.net/mapclient)
     along with MAP Client.  If not, see <http://www.gnu.org/licenses/>..
 '''
 
-from PySide.QtGui import QDialog, QFileDialog, QDialogButtonBox,\
-                         QAbstractItemView, QTableWidgetItem, QComboBox   
+from PySide2.QtWidgets import QAbstractItemView, QTableWidgetItem, QComboBox
 
 class LandmarkComboBoxTable(object):
 

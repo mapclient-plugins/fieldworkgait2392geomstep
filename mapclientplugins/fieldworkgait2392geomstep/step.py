@@ -25,8 +25,6 @@ OpenSim Gait2392 bodies customisation
 import os
 import json
 
-from PySide import QtGui
-
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.fieldworkgait2392geomstep.configuredialog import ConfigureDialog
 
@@ -153,7 +151,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         then set:
             self._configured = True
         '''
-        dlg = ConfigureDialog()
+        dlg = ConfigureDialog(self._main_window)
         dlg.identifierOccursCount = self._identifierOccursCount
         dlg.setConfig(self._config)
         dlg.validate()
@@ -192,7 +190,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         '''
         self._config.update(json.loads(string))
 
-        d = ConfigureDialog()
+        d = ConfigureDialog(self._main_window)
         d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()
