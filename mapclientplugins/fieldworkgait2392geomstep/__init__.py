@@ -1,4 +1,3 @@
-
 '''
 MAP Client Plugin
 '''
@@ -9,4 +8,3 @@ __location__ = 'https://github.com/mapclient-plugins/fieldworkgait2392geomstep/a
 
 # import class that derives itself from the step mountpoint.
 from mapclientplugins.fieldworkgait2392geomstep import step
-

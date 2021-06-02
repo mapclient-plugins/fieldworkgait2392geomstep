@@ -38,11 +38,12 @@ marker_name_map = {
     'tibiafibula-KJC-r': 'R.Tib.KJC',
 }
 
+
 def _load_virtual_markers():
     markers = {}
     marker_coords = {}
 
-    if opensim_version==4.0:
+    if opensim_version == 4.0:
         _dummy_model = opensim.Model()
         _osim_markerset = opensim.MarkerSet(_dummy_model, MARKERSET_PATH)
     else:
@@ -57,39 +58,41 @@ def _load_virtual_markers():
         osim_marker.getOffset(_v)
         offset = np.array([_v.get(i) for i in range(3)])
         marker = Marker(
-                    name=osim_marker.getName(),
-                    bodyname=osim_marker.getBodyName(),
-                    offset=offset,
-                    )
+            name=osim_marker.getName(),
+            bodyname=osim_marker.getBodyName(),
+            offset=offset,
+        )
         markers[marker.name] = marker
         marker_coords[marker.name] = marker.offset
 
     return markers, marker_coords
+
 
 def _add_synthetic_markers(marker, marker_coords):
     # add hip joint centres to markers (joint coords taken from gait2392)
     markers['L.HJC'] = Marker(
         bodyname='pelvis',
         offset=(-0.0707, -0.0661, -0.0835)
-        )
+    )
     marker_coords['L.HJC'] = markers['L.HJC'].offset
     markers['R.HJC'] = Marker(
         bodyname='pelvis',
         offset=(-0.0707, -0.0661, 0.0835)
-        )
+    )
     marker_coords['R.HJC'] = markers['R.HJC'].offset
 
     # add femur head centre to markers
-    markers['L.FHC'] = Marker(bodyname='femur_l', offset=(0,0,0))
+    markers['L.FHC'] = Marker(bodyname='femur_l', offset=(0, 0, 0))
     marker_coords['L.FHC'] = markers['L.FHC'].offset
-    markers['R.FHC'] = Marker(bodyname='femur_r', offset=(0,0,0))
+    markers['R.FHC'] = Marker(bodyname='femur_r', offset=(0, 0, 0))
     marker_coords['R.FHC'] = markers['R.FHC'].offset
 
     # add knee centre in tibia frame to markers
-    markers['L.Tib.KJC'] = Marker(bodyname='tibia_l', offset=(0,0,0))
+    markers['L.Tib.KJC'] = Marker(bodyname='tibia_l', offset=(0, 0, 0))
     marker_coords['L.Tib.KJC'] = markers['L.Tib.KJC'].offset
-    markers['R.Tib.KJC'] = Marker(bodyname='tibia_r', offset=(0,0,0))
+    markers['R.Tib.KJC'] = Marker(bodyname='tibia_r', offset=(0, 0, 0))
     marker_coords['R.Tib.KJC'] = markers['R.Tib.KJC'].offset
+
 
 def _load_marker_offsets():
     """
@@ -101,14 +104,15 @@ def _load_marker_offsets():
         lines = f.readlines()
 
     for l in lines:
-        if l[0]=='#':
+        if l[0] == '#':
             pass
         else:
             words = l.split()
-            if len(words)==4:
+            if len(words) == 4:
                 marker_offsets[words[0]] = np.array([float(x) for x in words[1:]])
 
     return marker_offsets
+
 
 # load up virtual markers from file
 markers, marker_coords = _load_virtual_markers()
@@ -116,6 +120,7 @@ marker_offsets = _load_marker_offsets()
 
 # add some additional "markers" based on anatomical/functional landmarks
 _add_synthetic_markers(markers, marker_coords)
+
 
 def get_equiv_vmarker_coords(fw_name):
     """

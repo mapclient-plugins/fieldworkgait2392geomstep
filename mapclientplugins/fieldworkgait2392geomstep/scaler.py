@@ -13,8 +13,10 @@ from gias2.common import math
 
 from mapclientplugins.fieldworkgait2392geomstep import virtualmarker
 
+
 def _dist(x1, x2):
-    return np.sqrt(((x1-x2)**2.0).sum(-1))
+    return np.sqrt(((x1 - x2) ** 2.0).sum(-1))
+
 
 def _apply_marker_offset(model, name, coords):
     """
@@ -24,22 +26,22 @@ def _apply_marker_offset(model, name, coords):
 
     offset_local = virtualmarker.marker_offsets[name]
     # if no offset
-    if np.all(offset_local==np.zeros(3)):
+    if np.all(offset_local == np.zeros(3)):
         return coords
 
     offset_mag = math.mag(offset_local)
     offset_v = math.norm(offset_local)
     offset_v_global = math.norm(
         np.dot(
-            inv(model.acs.local_transform)[:3,:3],
-            offset_v[:,np.newaxis]
-            ).squeeze()
-        )
-    offset_global = offset_v_global*offset_mag
+            inv(model.acs.local_transform)[:3, :3],
+            offset_v[:, np.newaxis]
+        ).squeeze()
+    )
+    offset_global = offset_v_global * offset_mag
     return coords + offset_global
 
-def _get_cust_landmark(body, lname, offset=True):
 
+def _get_cust_landmark(body, lname, offset=True):
     if lname[-2:] in ('-l', '-r'):
         _lname = lname[:-2]
     else:
@@ -51,23 +53,23 @@ def _get_cust_landmark(body, lname, offset=True):
     else:
         return ld
 
-#========#
+
+# ========#
 # Pelvis #
-#========#
+# ========#
 # landmarks used: LASIS, RASIS, Sacral
 # x scaling: Sacral to midpoint(LASIS, RASIS) distance
 # y scaling: average of x and z scaling (?)
 # z scaling: LASIS to RASIS distance
 def calc_pelvis_scale_factors(ll, unitscale, offset=True):
-
     # get customised model landmarks
     cust_LASIS = _get_cust_landmark(ll.models['pelvis'], 'pelvis-LASIS', offset)
     cust_RASIS = _get_cust_landmark(ll.models['pelvis'], 'pelvis-RASIS', offset)
     cust_sacral = _get_cust_landmark(ll.models['pelvis'], 'pelvis-Sacral', offset)
     cust_lhjc = _get_cust_landmark(ll.models['pelvis'], 'pelvis-LHJC', offset)
     cust_rhjc = _get_cust_landmark(ll.models['pelvis'], 'pelvis-RHJC', offset)
-    cust_o = 0.5*(cust_LASIS + cust_RASIS)
-    cust_ydist = 0.5*(_dist(cust_lhjc, cust_LASIS)+_dist(cust_rhjc, cust_RASIS))
+    cust_o = 0.5 * (cust_LASIS + cust_RASIS)
+    cust_ydist = 0.5 * (_dist(cust_lhjc, cust_LASIS) + _dist(cust_rhjc, cust_RASIS))
 
     # get reference model landmarks
     ref_LASIS = virtualmarker.get_equiv_vmarker_coords('pelvis-LASIS')
@@ -75,23 +77,23 @@ def calc_pelvis_scale_factors(ll, unitscale, offset=True):
     ref_sacral = virtualmarker.get_equiv_vmarker_coords('pelvis-Sacral')
     ref_lhjc = virtualmarker.get_equiv_vmarker_coords('pelvis-LHJC')
     ref_rhjc = virtualmarker.get_equiv_vmarker_coords('pelvis-RHJC')
-    ref_o = 0.5*(ref_LASIS + ref_RASIS)
-    ref_ydist = 0.5*(_dist(ref_lhjc, ref_LASIS)+_dist(ref_rhjc, ref_RASIS))
+    ref_o = 0.5 * (ref_LASIS + ref_RASIS)
+    ref_ydist = 0.5 * (_dist(ref_lhjc, ref_LASIS) + _dist(ref_rhjc, ref_RASIS))
 
     # calculate scaling factors
-    sf_x = unitscale*_dist(cust_sacral, cust_o)/_dist(ref_sacral, ref_o)
-    sf_y = unitscale*cust_ydist/ref_ydist
-    sf_z = unitscale*_dist(cust_LASIS, cust_RASIS)/_dist(ref_LASIS, ref_RASIS)
+    sf_x = unitscale * _dist(cust_sacral, cust_o) / _dist(ref_sacral, ref_o)
+    sf_y = unitscale * cust_ydist / ref_ydist
+    sf_z = unitscale * _dist(cust_LASIS, cust_RASIS) / _dist(ref_LASIS, ref_RASIS)
     # sf_y = 0.5*(sf_x + sf_z)
-    
+
     # print('pelvis scaling factor: {:5.2f} {:5.2f} {:5.2f}'.format(sf_x, sf_y, sf_z))
 
     return np.array([sf_x, sf_y, sf_z])
 
 
-#=======#
+# =======#
 # Femur #
-#=======#
+# =======#
 # landmarks used: LEC, MEC, HC
 # x scaling: average of y and z (?)
 # y scaling: head to midpoint(MEC, LEC) distance
@@ -100,36 +102,37 @@ def calc_femur_scale_factors(ll, unitscale, side=None, offset=True):
     if side is None:
         sf_l = _calc_femur_scale_factors(ll, unitscale, 'l', offset)
         sf_r = _calc_femur_scale_factors(ll, unitscale, 'r', offset)
-        return (sf_l+sf_r)*0.5
+        return (sf_l + sf_r) * 0.5
     else:
         return _calc_femur_scale_factors(ll, unitscale, side, offset)
 
-def _calc_femur_scale_factors(ll, unitscale, side='l', offset=True):
 
+def _calc_femur_scale_factors(ll, unitscale, side='l', offset=True):
     # get customised model landmarks
-    cust_LEC = _get_cust_landmark(ll.models['femur-'+side], 'femur-LEC-'+side, offset)
-    cust_MEC = _get_cust_landmark(ll.models['femur-'+side], 'femur-MEC-'+side, offset)
-    cust_HC = _get_cust_landmark(ll.models['femur-'+side], 'femur-HC-'+side, offset)
-    cust_o = 0.5*(cust_LEC + cust_MEC)
+    cust_LEC = _get_cust_landmark(ll.models['femur-' + side], 'femur-LEC-' + side, offset)
+    cust_MEC = _get_cust_landmark(ll.models['femur-' + side], 'femur-MEC-' + side, offset)
+    cust_HC = _get_cust_landmark(ll.models['femur-' + side], 'femur-HC-' + side, offset)
+    cust_o = 0.5 * (cust_LEC + cust_MEC)
 
     # get reference model landmarks
-    ref_LEC = virtualmarker.get_equiv_vmarker_coords('femur-LEC-'+side)
-    ref_MEC = virtualmarker.get_equiv_vmarker_coords('femur-MEC-'+side)
-    ref_HC = virtualmarker.get_equiv_vmarker_coords('femur-HC-'+side)
-    ref_o = 0.5*(ref_LEC + ref_MEC)
+    ref_LEC = virtualmarker.get_equiv_vmarker_coords('femur-LEC-' + side)
+    ref_MEC = virtualmarker.get_equiv_vmarker_coords('femur-MEC-' + side)
+    ref_HC = virtualmarker.get_equiv_vmarker_coords('femur-HC-' + side)
+    ref_o = 0.5 * (ref_LEC + ref_MEC)
 
     # calculate scaling factors
-    sf_y = unitscale*_dist(cust_HC, cust_o)/_dist(ref_HC, ref_o)
-    sf_z = unitscale*_dist(cust_LEC, cust_MEC)/_dist(ref_LEC, ref_MEC)
-    sf_x = 0.5*(sf_y + sf_z)
+    sf_y = unitscale * _dist(cust_HC, cust_o) / _dist(ref_HC, ref_o)
+    sf_z = unitscale * _dist(cust_LEC, cust_MEC) / _dist(ref_LEC, ref_MEC)
+    sf_x = 0.5 * (sf_y + sf_z)
 
     # print('femur scaling factor: {:5.2f} {:5.2f} {:5.2f}'.format(sf_x, sf_y, sf_z))
 
     return np.array([sf_x, sf_y, sf_z])
 
-#=======#
+
+# =======#
 # Tibia #
-#=======#
+# =======#
 # landmarks used: LM, MM, (LEC, MEC/KJC in tibia frame)
 # x scaling: average of y and z (?)
 # y scaling: midpoint(LEC,MEC) to midpoint(LM, MM) distance
@@ -138,42 +141,42 @@ def calc_tibia_scale_factors(ll, unitscale, side=None, offset=True):
     if side is None:
         sf_l = _calc_tibia_scale_factors(ll, unitscale, 'l', offset)
         sf_r = _calc_tibia_scale_factors(ll, unitscale, 'r', offset)
-        return (sf_l+sf_r)*0.5
+        return (sf_l + sf_r) * 0.5
     else:
         return _calc_tibia_scale_factors(ll, unitscale, side, offset)
 
-def _calc_tibia_scale_factors(ll, unitscale, side='l', offset=True):
 
+def _calc_tibia_scale_factors(ll, unitscale, side='l', offset=True):
     # get customised model landmarks
-    cust_LM = _get_cust_landmark(ll.models['tibiafibula-'+side], 'tibiafibula-LM-'+side, offset)
-    cust_MM = _get_cust_landmark(ll.models['tibiafibula-'+side], 'tibiafibula-MM-'+side, offset)
-    cust_LEC = _get_cust_landmark(ll.models['femur-'+side], 'femur-LEC-'+side, offset)
-    cust_MEC = _get_cust_landmark(ll.models['femur-'+side], 'femur-MEC-'+side, offset)
-    cust_kjc = 0.5*(cust_LEC + cust_MEC)
-    cust_ajc = 0.5*(cust_LM + cust_MM)
+    cust_LM = _get_cust_landmark(ll.models['tibiafibula-' + side], 'tibiafibula-LM-' + side, offset)
+    cust_MM = _get_cust_landmark(ll.models['tibiafibula-' + side], 'tibiafibula-MM-' + side, offset)
+    cust_LEC = _get_cust_landmark(ll.models['femur-' + side], 'femur-LEC-' + side, offset)
+    cust_MEC = _get_cust_landmark(ll.models['femur-' + side], 'femur-MEC-' + side, offset)
+    cust_kjc = 0.5 * (cust_LEC + cust_MEC)
+    cust_ajc = 0.5 * (cust_LM + cust_MM)
 
     # get reference model landmarks
-    ref_LM = virtualmarker.get_equiv_vmarker_coords('tibiafibula-LM-'+side)
-    ref_MM = virtualmarker.get_equiv_vmarker_coords('tibiafibula-MM-'+side)
-    ref_kjc = virtualmarker.get_equiv_vmarker_coords('tibiafibula-KJC-'+side)
-    ref_ajc = 0.5*(ref_LM + ref_MM)
+    ref_LM = virtualmarker.get_equiv_vmarker_coords('tibiafibula-LM-' + side)
+    ref_MM = virtualmarker.get_equiv_vmarker_coords('tibiafibula-MM-' + side)
+    ref_kjc = virtualmarker.get_equiv_vmarker_coords('tibiafibula-KJC-' + side)
+    ref_ajc = 0.5 * (ref_LM + ref_MM)
 
     # calculate scaling factors
-    sf_y = unitscale*_dist(cust_kjc, cust_ajc)/_dist(ref_kjc, ref_ajc)
-    sf_z = unitscale*_dist(cust_LM, cust_MM)/_dist(ref_LM, ref_MM)
-    sf_x = 0.5*(sf_y + sf_z)
+    sf_y = unitscale * _dist(cust_kjc, cust_ajc) / _dist(ref_kjc, ref_ajc)
+    sf_z = unitscale * _dist(cust_LM, cust_MM) / _dist(ref_LM, ref_MM)
+    sf_x = 0.5 * (sf_y + sf_z)
 
     # print('tibia scaling factor: {:5.2f} {:5.2f} {:5.2f}'.format(sf_x, sf_y, sf_z))
 
     return np.array([sf_x, sf_y, sf_z])
 
-#============#
+
+# ============#
 # whole body #
-#============#
+# ============#
 # average of scaling factors from the 3 bodies above
 # to be applied to non-atlas segments e.g. torso, feet
 def calc_whole_body_scale_factors(ll, unitscale, offset=True):
-
     sf_pelvis = calc_pelvis_scale_factors(ll, unitscale, offset)
     sf_femur_l = calc_femur_scale_factors(ll, unitscale, 'l', offset)
     sf_femur_r = calc_femur_scale_factors(ll, unitscale, 'r', offset)
@@ -185,15 +188,16 @@ def calc_whole_body_scale_factors(ll, unitscale, offset=True):
         sf_femur_r,
         sf_tibia_l,
         sf_tibia_r,
-        ])
+    ])
 
     av_sf = sf_all.mean(0)
     # print('body scaling factor: {:5.2f} {:5.2f} {:5.2f}'.format(*av_sf))
     return av_sf
 
-#==========================#
+
+# ==========================#
 # Scaling helper functions #
-#==========================#
+# ==========================#
 def _get_segment_muscles(model, segname):
     """
     Return osim muscles instances of muscles in the defined segment
@@ -202,11 +206,12 @@ def _get_segment_muscles(model, segname):
     for mus in model.muscles.values():
         # check each path point to see if they are on the segment
         for pp in mus.getAllPathPoints():
-            if pp.body.name==segname:
+            if pp.body.name == segname:
                 seg_muscles.append(mus)
                 break
 
     return seg_muscles
+
 
 def _get_segments_muscles(model, segnames):
     """
@@ -221,6 +226,7 @@ def _get_segments_muscles(model, segnames):
                 break
 
     return seg_muscles
+
 
 def scale_body_mass_inertia(body, sf):
     """
@@ -254,7 +260,7 @@ def scale_body_mass_inertia(body, sf):
     new_inertia = body.inertia
 
     # scale back to 1,1,1
-    sf_inv = 1.0/np.array(sf)
+    sf_inv = 1.0 / np.array(sf)
     # body.scale(sf_inv, False)
     body.scaleInertialProperties(sf_inv, True)
 
@@ -268,6 +274,7 @@ def scale_body_mass_inertia(body, sf):
     print('inertia: {} -> {}'.format(old_inertia.diagonal(), new_inertia.diagonal()))
 
     return body
+
 
 def scale_joint(joint, sfs, bodies):
     """
@@ -294,10 +301,10 @@ def scale_joint(joint, sfs, bodies):
     joint_scales = []
     for bi, bname in enumerate(bodies):
         s = osim.Scale(
-                sfs[bi],
-                '{}_scale_{}'.format(joint.name, bname),
-                bname,
-                )
+            sfs[bi],
+            '{}_scale_{}'.format(joint.name, bname),
+            bname,
+        )
         joint_scales.append(s)
 
     joint.scale(*joint_scales)
@@ -311,10 +318,10 @@ def scale_joint(joint, sfs, bodies):
     joint_scales = []
     for bi, bname in enumerate(bodies):
         s = osim.Scale(
-                1.0/sfs[bi],
-                '{}_scale_{}'.format(joint.name, bname),
-                bname,
-                )
+            1.0 / sfs[bi],
+            '{}_scale_{}'.format(joint.name, bname),
+            bname,
+        )
         joint_scales.append(s)
 
     joint.scale(*joint_scales)
@@ -327,6 +334,7 @@ def scale_joint(joint, sfs, bodies):
     print('locationInParent: {} -> {}'.format(old_locationInParent, new_locationInParent))
 
     return joint
+
 
 def scale_body_muscle_params(model, bodyscales, state):
     """
@@ -346,11 +354,11 @@ def scale_body_muscle_params(model, bodyscales, state):
     None
     """
 
-    raise(DeprecationWarning, 'This does not work as it does not use muscle prescale, scale and postscale')
+    raise (DeprecationWarning, 'This does not work as it does not use muscle prescale, scale and postscale')
 
     # get all muscles of the body
     muscles = _get_segments_muscles(model, list(bodyscales.keys()))
-    if len(muscles)==0:
+    if len(muscles) == 0:
         print('WARNING: no muscles found for bodies {}'.format(list(bodyscales.keys())))
 
     # for each muscle, apply scaling, get opt fibre length and
@@ -363,24 +371,23 @@ def scale_body_muscle_params(model, bodyscales, state):
         mus_scales = []
         for bname, bscale in bodyscales.items():
             s = osim.Scale(
-                    bscale,
-                    '{}_scale_{}'.format(mus.name, bname),
-                    bname,
-                    )
+                bscale,
+                '{}_scale_{}'.format(mus.name, bname),
+                bname,
+            )
             mus_scales.append(s)
         mus.scale(state, *mus_scales)
 
         new_ofl = mus.optimalFiberLength
         new_tsl = mus.tendonSlackLength
 
-
         mus_inv_scales = []
         for bname, bscale in bodyscales.items():
             s = osim.Scale(
-                    1.0/np.array(bscale),
-                    '{}_inv_scale_{}'.format(mus.name, bname),
-                    bname,
-                    )
+                1.0 / np.array(bscale),
+                '{}_inv_scale_{}'.format(mus.name, bname),
+                bname,
+            )
             mus_inv_scales.append(s)
         mus.scale(state, *mus_inv_scales)
 
@@ -389,6 +396,7 @@ def scale_body_muscle_params(model, bodyscales, state):
 
         print('optimal fiber length: {} -> {}'.format(old_ofl, new_ofl))
         print('tendon slack length: {} -> {}'.format(old_tsl, new_tsl))
+
 
 def calc_scale_factors_all_bodies(LL, unit_scaling, scale_other_bodies=True):
     """
@@ -402,88 +410,87 @@ def calc_scale_factors_all_bodies(LL, unit_scaling, scale_other_bodies=True):
         osim.Scale(
             calc_pelvis_scale_factors(
                 LL, unit_scaling,
-                ),
+            ),
             'pelvis_scaling', 'pelvis'
-            )
         )
+    )
 
     # femur
     sf_list.append(
         osim.Scale(
             calc_femur_scale_factors(
                 LL, unit_scaling, None,
-                ),
+            ),
             'femur_l_scaling', 'femur_l'
-            )
         )
+    )
     sf_list.append(
         osim.Scale(
             calc_femur_scale_factors(
                 LL, unit_scaling, None,
-                ),
+            ),
             'femur_r_scaling', 'femur_r'
-            )
         )
+    )
 
     # tibia
     sf_list.append(
         osim.Scale(
             calc_tibia_scale_factors(
                 LL, unit_scaling, None,
-                ),
+            ),
             'tibia_l_scaling', 'tibia_l'
-            )
         )
+    )
     sf_list.append(
         osim.Scale(
             calc_tibia_scale_factors(
                 LL, unit_scaling, None,
-                ),
+            ),
             'tibia_r_scaling', 'tibia_r'
-            )
         )
+    )
 
     if scale_other_bodies:
         sf_whole = calc_whole_body_scale_factors(
             LL, unit_scaling
-            )
+        )
 
         # torso
         sf_list.append(
             osim.Scale(sf_whole, 'torso_scaling', 'torso')
-            )
+        )
 
         # talus
         sf_list.append(
             osim.Scale(sf_whole, 'talus_l_scaling', 'talus_l')
-            )
+        )
         sf_list.append(
             osim.Scale(sf_whole, 'talus_r_scaling', 'talus_r')
-            )
+        )
 
         # calcn
         sf_list.append(
             osim.Scale(sf_whole, 'calcn_l_scaling', 'calcn_l')
-            )
+        )
         sf_list.append(
             osim.Scale(sf_whole, 'calcn_r_scaling', 'calcn_r')
-            )
+        )
 
         # toes
         sf_list.append(
             osim.Scale(sf_whole, 'toes_l_scaling', 'toes_l')
-            )
+        )
         sf_list.append(
             osim.Scale(sf_whole, 'toes_r_scaling', 'toes_r')
-            )
+        )
 
     return sf_list
 
-def scale_body_visual_geometry(body, sf):
 
+def scale_body_visual_geometry(body, sf):
     _sf = osim.opensim.Vec3(sf[0], sf[1], sf[2])
     gset = body._osimBody.getDisplayer().getGeometrySet()
     for gi in range(gset.getSize()):
         g = gset.get(gi)
         g.setScaleFactors(_sf)
-

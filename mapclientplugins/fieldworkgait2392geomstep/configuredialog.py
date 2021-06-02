@@ -1,13 +1,12 @@
-
 import os
 from PySide2 import QtGui, QtWidgets
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
 from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS, VALID_MODEL_MARKERS
 from mapclientplugins.fieldworkgait2392geomstep.landmarktablewidget import LandmarkComboBoxTextTable
 
-
 INVALID_STYLE_SHEET = 'background-color: rgba(239, 0, 0, 50)'
 DEFAULT_STYLE_SHEET = ''
+
 
 class ConfigureDialog(QtWidgets.QDialog):
     '''
@@ -19,7 +18,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         Constructor
         '''
         QtWidgets.QDialog.__init__(self, parent)
-        
+
         self._ui = Ui_Dialog()
         self._ui.setupUi(self)
 
@@ -34,9 +33,9 @@ class ConfigureDialog(QtWidgets.QDialog):
 
         # table of model and input marker pairs
         self.markerTable = LandmarkComboBoxTextTable(
-                                VALID_MODEL_MARKERS,
-                                self._ui.tableWidgetLandmarks,
-                                )
+            VALID_MODEL_MARKERS,
+            self._ui.tableWidgetLandmarks,
+        )
 
         self._setupDialog()
         self._makeConnections()
@@ -63,8 +62,9 @@ class ConfigureDialog(QtWidgets.QDialog):
         result = QtWidgets.QMessageBox.Yes
         if not self.validate():
             result = QtWidgets.QMessageBox.warning(self, 'Invalid Configuration',
-                'This configuration is invalid.  Unpredictable behaviour may result if you choose \'Yes\', are you sure you want to save this configuration?)',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+                                                   'This configuration is invalid.  Unpredictable behaviour may result if you choose \'Yes\', are you sure you want to save this configuration?)',
+                                                   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                   QtWidgets.QMessageBox.No)
 
         if result == QtWidgets.QMessageBox.Yes:
             QtWidgets.QDialog.accept(self)
@@ -89,7 +89,7 @@ class ConfigureDialog(QtWidgets.QDialog):
             self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET)
         else:
             self._ui.lineEdit_osim_output_dir.setStyleSheet(INVALID_STYLE_SHEET)
-            
+
         valid = idValid and osimOutputDirValid
         self._ui.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(valid)
 
@@ -110,9 +110,9 @@ class ConfigureDialog(QtWidgets.QDialog):
         config['adj_marker_pairs'] = self.markerTable.getLandmarkPairs()
         print('DING')
         print(config['adj_marker_pairs'])
-        
+
         subject_mass = str(self._ui.lineEdit_subject_mass.text())
-        if len(subject_mass)==0 or (subject_mass is None):
+        if len(subject_mass) == 0 or (subject_mass is None):
             config['subject_mass'] = None
         else:
             config['subject_mass'] = float(subject_mass)
@@ -153,13 +153,13 @@ class ConfigureDialog(QtWidgets.QDialog):
         self._ui.comboBox_in_unit.setCurrentIndex(
             VALID_UNITS.index(
                 config['in_unit']
-                )
             )
+        )
         self._ui.comboBox_out_unit.setCurrentIndex(
             VALID_UNITS.index(
                 config['out_unit']
-                )
             )
+        )
 
         for mm, im in sorted(config['adj_marker_pairs'].items()):
             self.markerTable.addLandmark(mm, im)

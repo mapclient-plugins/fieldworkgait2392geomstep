@@ -33,6 +33,7 @@ from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import Ga
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 TEMPLATE_OSIM_FILENAME = os.path.join(SELF_DIR, 'data/gait2392_simbody.osim')
 
+
 class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
     '''
     Step for customising the OpenSim Gait2392 model geometry using
@@ -67,7 +68,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
 
     def __init__(self, location):
         super(FieldworkGait2392GeomStep, self).__init__('Fieldwork Gait2392 Geometry Customisation', location)
-        self._configured = False # A step cannot be executed until it has been configured.
+        self._configured = False  # A step cannot be executed until it has been configured.
         self._category = 'OpenSim'
         # Add any other initialisation code here:
         # Ports:
@@ -125,11 +126,11 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         uses port for this step then the index can be ignored.
         '''
         if index == 0:
-            self.inputLLAtlas = dataIn # gias-lowerlimb
+            self.inputLLAtlas = dataIn  # gias-lowerlimb
         elif index == 1:
             self._g2392Cust.input_markers = dataIn
         else:
-            self.inputModels = dataIn # ju#fieldworkmodeldict
+            self.inputModels = dataIn  # ju#fieldworkmodeldict
             print(self.inputModels)
 
     def getPortData(self, index):
@@ -138,7 +139,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         The index is the index of the port in the port list.  If there is only one
         provides port for this step then the index can be ignored.
         '''
-        if index==3:
+        if index == 3:
             return self._g2392Cust.osimmodel._model
         else:
             return self._g2392Cust.LL
@@ -156,11 +157,11 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         dlg.setConfig(self._config)
         dlg.validate()
         dlg.setModal(True)
-        
+
         if dlg.exec_():
             self._config = dlg.getConfig()
             self._g2392Cust.config = self._config
-        
+
         self._configured = dlg.validate()
         self._configuredObserver()
 
@@ -194,5 +195,3 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()
-
-
