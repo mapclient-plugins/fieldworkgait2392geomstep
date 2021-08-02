@@ -22,6 +22,8 @@ class ConfigureDialog(QtWidgets.QDialog):
         self._ui = Ui_Dialog()
         self._ui.setupUi(self)
 
+        self._workflow_location = None
+
         # Keep track of the previous identifier so that we can track changes
         # and know how many occurrences of the current identifier there should
         # be.
@@ -54,6 +56,9 @@ class ConfigureDialog(QtWidgets.QDialog):
         self._ui.pushButton_addLandmark.clicked.connect(self.markerTable.addLandmark)
         self._ui.pushButton_removeLandmark.clicked.connect(self.markerTable.removeLandmark)
 
+    def setWorkflowLocation(self, location):
+        self._workflow_location = location
+
     def accept(self):
         """
         Override the accept method so that we can confirm saving an
@@ -77,20 +82,14 @@ class ConfigureDialog(QtWidgets.QDialog):
         """
         # Determine if the current identifier is unique throughout the workflow
         # The identifierOccursCount method is part of the interface to the workflow framework.
-        idValue = self.identifierOccursCount(self._ui.lineEdit_id.text())
-        idValid = (idValue == 0) or (idValue == 1 and self._previousIdentifier == self._ui.lineEdit_id.text())
-        if idValid:
-            self._ui.lineEdit_id.setStyleSheet(DEFAULT_STYLE_SHEET)
-        else:
-            self._ui.lineEdit_id.setStyleSheet(INVALID_STYLE_SHEET)
+        id_value = self.identifierOccursCount(self._ui.lineEdit_id.text())
+        id_valid = (id_value == 0) or (id_value == 1 and self._previousIdentifier == self._ui.lineEdit_id.text())
+        self._ui.lineEdit_id.setStyleSheet(DEFAULT_STYLE_SHEET if id_valid else INVALID_STYLE_SHEET)
 
-        osimOutputDirValid = os.path.exists(self._ui.lineEdit_osim_output_dir.text())
-        if osimOutputDirValid:
-            self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET)
-        else:
-            self._ui.lineEdit_osim_output_dir.setStyleSheet(INVALID_STYLE_SHEET)
+        location_valid = os.path.exists(os.path.join(self._workflow_location, self._ui.lineEdit_osim_output_dir.text()))
+        self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
 
-        valid = idValid and osimOutputDirValid
+        valid = id_valid and location_valid
         self._ui.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(valid)
 
         return valid
@@ -191,7 +190,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         location = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self._previousOsimOutputDir)
         if location:
             self._previousOsimOutputDir = location
-            self._ui.lineEdit_osim_output_dir.setText(location)
+            self._ui.lineEdit_osim_output_dir.setText(os.path.relpath(location, self._workflow_location))
 
     def _osimOutputDirEdited(self):
         self.validate()
