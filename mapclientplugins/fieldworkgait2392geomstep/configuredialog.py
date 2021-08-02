@@ -9,14 +9,14 @@ DEFAULT_STYLE_SHEET = ''
 
 
 class ConfigureDialog(QtWidgets.QDialog):
-    '''
+    """
     Configure dialog to present the user with the options to configure this step.
-    '''
+    """
 
     def __init__(self, parent=None):
-        '''
+        """
         Constructor
-        '''
+        """
         QtWidgets.QDialog.__init__(self, parent)
 
         self._ui = Ui_Dialog()
@@ -55,10 +55,10 @@ class ConfigureDialog(QtWidgets.QDialog):
         self._ui.pushButton_removeLandmark.clicked.connect(self.markerTable.removeLandmark)
 
     def accept(self):
-        '''
+        """
         Override the accept method so that we can confirm saving an
         invalid configuration.
-        '''
+        """
         result = QtWidgets.QMessageBox.Yes
         if not self.validate():
             result = QtWidgets.QMessageBox.warning(self, 'Invalid Configuration',
@@ -70,11 +70,11 @@ class ConfigureDialog(QtWidgets.QDialog):
             QtWidgets.QDialog.accept(self)
 
     def validate(self):
-        '''
+        """
         Validate the configuration dialog fields.  For any field that is not valid
-        set the style sheet to the INVALID_STYLE_SHEET.  Return the outcome of the 
+        set the style sheet to the INVALID_STYLE_SHEET.  Return the outcome of the
         overall validity of the configuration.
-        '''
+        """
         # Determine if the current identifier is unique throughout the workflow
         # The identifierOccursCount method is part of the interface to the workflow framework.
         idValue = self.identifierOccursCount(self._ui.lineEdit_id.text())
@@ -96,11 +96,11 @@ class ConfigureDialog(QtWidgets.QDialog):
         return valid
 
     def getConfig(self):
-        '''
+        """
         Get the current value of the configuration from the dialog.  Also
         set the _previousIdentifier value so that we can check uniqueness of the
         identifier over the whole of the workflow.
-        '''
+        """
         self._previousIdentifier = self._ui.lineEdit_id.text()
         config = {}
         config['identifier'] = self._ui.lineEdit_id.text()
@@ -140,11 +140,11 @@ class ConfigureDialog(QtWidgets.QDialog):
         return config
 
     def setConfig(self, config):
-        '''
+        """
         Set the current value of the configuration for the dialog.  Also
         set the _previousIdentifier value so that we can check uniqueness of the
         identifier over the whole of the workflow.
-        '''
+        """
         self._previousIdentifier = config['identifier']
         self._ui.lineEdit_id.setText(config['identifier'])
         self._previousOsimOutputDir = config['osim_output_dir']

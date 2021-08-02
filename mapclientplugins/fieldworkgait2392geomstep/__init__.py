@@ -1,6 +1,6 @@
-'''
+"""
 MAP Client Plugin
-'''
+"""
 __version__ = '0.1.2'
 __author__ = 'Ju Zhang'
 __stepname__ = 'Fieldwork Gait2392 Geometry'
