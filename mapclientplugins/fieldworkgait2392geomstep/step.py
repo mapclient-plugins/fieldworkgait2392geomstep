@@ -99,16 +99,16 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config['adj_marker_pairs'] = {}
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)
+        self._g2392Cust.set_workflow_location(self._location)
         self.inputModels = None
         self.inputLLAtlas = None
 
     def execute(self):
         """
         Add your code here that will kick off the execution of the step.
-        Make sure you call the _doneExecution() method when finished.  This method
-        may be connected up to a button in a widget for example.
+        Make sure you call the _doneExecution() method when finished. This
+        method may be connected up to a button in a widget for example.
         """
-        # Put your execute step code here before calling the '_doneExecution' method.
         self._g2392Cust.init_osim_model()
         if self.inputLLAtlas is not None:
             self._g2392Cust.set_lowerlimb_atlas(self.inputLLAtlas)
@@ -120,8 +120,8 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
     def setPortData(self, index, dataIn):
         """
         Add your code here that will set the appropriate objects for this step.
-        The index is the index of the port in the port list.  If there is only one
-        uses port for this step then the index can be ignored.
+        The index is the index of the port in the port list.  If there is only
+        one uses port for this step then the index can be ignored.
         """
         if index == 0:
             self.inputLLAtlas = dataIn  # gias-lowerlimb
@@ -133,9 +133,9 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
 
     def getPortData(self, index):
         """
-        Add your code here that will return the appropriate objects for this step.
-        The index is the index of the port in the port list.  If there is only one
-        provides port for this step then the index can be ignored.
+        Add your code here that will return the appropriate objects for this
+        step. The index is the index of the port in the port list.  If there is
+        only one provides port for this step then the index can be ignored.
         """
         if index == 3:
             return self._g2392Cust.osimmodel._model
