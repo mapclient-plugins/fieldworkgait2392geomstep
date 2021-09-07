@@ -354,11 +354,7 @@ class Gait2392GeomCustomiser(object):
 
         self.LL.update_model_dict()
 
-    # The vtp files that are being saved don't appear to be compatible with
-    # OpenSim 4.2 (not visible in the OpenSim GUI). It looks like they are
-    # being saved in the wrong format, this could be a problem with the Writer
-    # class or with the structure of the LowerLimb GeometricFields.
-    def _save_vtp(self, gf, filename, bodycoordmapper):
+    def _save_stl(self, gf, filename, bodycoordmapper):
         v, f = gf.triangulate(self.gfield_disc)
         v_local = bodycoordmapper(v)
         v_local *= self._unit_scaling
@@ -367,7 +363,7 @@ class Gait2392GeomCustomiser(object):
             f=f,
             filename=filename,
         )
-        vtkwriter.writeVTP()
+        vtkwriter.writeSTL()
 
     def _get_osim_knee_spline_xk(self, side):
         """
@@ -460,19 +456,19 @@ class Gait2392GeomCustomiser(object):
             return lhgf, sacgf, rhgf
 
         if body_name == "pelvis":
-            file_names = ["sacrum.vtp", "r_pelvis.vtp", "l_pelvis.vtp"]
+            file_names = ["sacrum.stl", "r_pelvis.stl", "l_pelvis.stl"]
             gf_list = _split_pelvis_gfs(self.LL.models['pelvis'].gf)
             acs_map_local = self.LL.models['pelvis'].acs.map_local
 
         elif body_name[0:5] == "femur":
-            file_names = [body_name[-1] + "_femur.vtp"]
+            file_names = [body_name[-1] + "_femur.stl"]
             ll_model = self.LL.models[body_name]
             gf_list = [ll_model.gf]
             acs_map_local = ll_model.acs.map_local
 
         else:
-            file_names = [body_name[-1] + "_tibia.vtp",
-                          body_name[-1] + "_fibula.vtp"]
+            file_names = [body_name[-1] + "_tibia.stl",
+                          body_name[-1] + "_fibula.stl"]
             ll_model = self.LL.models[body_name]
             gf_list = _split_tibia_fibula_gfs(ll_model.gf)
             acs_map_local = ll_model.acs.map_local
@@ -481,7 +477,7 @@ class Gait2392GeomCustomiser(object):
             vtp_full_path = os.path.join(self._workflow_location,
                                          self.config['osim_output_dir'],
                                          GEOM_DIR, file_names[i])
-            self._save_vtp(gf_list[i], vtp_full_path, acs_map_local)
+            self._save_stl(gf_list[i], vtp_full_path, acs_map_local)
 
         return file_names
 
@@ -524,6 +520,9 @@ class Gait2392GeomCustomiser(object):
     # Muscle MovingPathPoints.
     # Perhaps this method could be integrated into update_joints to save on
     # function calls.
+    # Note: this function will remove any scale_factors, if these are
+    # important they should be applied to the values explicitly (if possible)
+    # before using this method.
     def remove_multipliers(self):
         """
         Replace each components MultiplierFunction with the original function
