@@ -38,7 +38,7 @@ package_dependencies = [
     "PySide2",
     "numpy",
     "gias2",
-    "opensim @ ???"
+    "opensim >= 4.2"
 ]
 package_data = {
     'mapclientplugins.fieldworkgait2392geomstep': [
