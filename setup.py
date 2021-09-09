@@ -31,7 +31,6 @@ def readfile(filename, split=False):
 
 package_readme = readfile("README.md", split=True)[3:]  # skip title
 package_license = readfile("LICENSE")
-# Need to update opensim reference to include install link.
 package_dependencies = [
     "transforms3d",
     "setuptools",
