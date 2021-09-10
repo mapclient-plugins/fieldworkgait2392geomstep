@@ -55,7 +55,7 @@ TIBFIB_SUBMESH_ELEMS = {'tibia': range(0, 46),
                         }
 TIBFIB_BASISTYPES = {'tri10': 'simplex_L3_L3', 'quad44': 'quad_L3_L3'}
 
-GEOM_DIR = 'Geometry'
+GEOM_DIR = '../Geometry'
 
 VALID_UNITS = ('nm', 'um', 'mm', 'cm', 'm', 'km')
 VALID_MODEL_MARKERS = sorted(list(scaler.virtualmarker.markers.keys()))
