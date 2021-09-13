@@ -29,6 +29,15 @@ def readfile(filename, split=False):
         return stream.read()
 
 
+# This reads the plugin version from __init__.py.
+file = open('opensim/__init__.py', 'r')
+lines = file.readlines()
+for line in lines:
+    if line.startswith('__version__'):
+        delim = '"' if '"' in line else "'"
+        version = line.split(delim)[1]
+        break
+
 package_readme = readfile("README.md", split=True)[3:]  # skip title
 package_license = readfile("LICENSE")
 package_dependencies = [
@@ -46,7 +55,7 @@ package_data = {
 }
 
 setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
-      version='0.1.3',
+      version=version,
       description='',
       long_description='\n'.join(package_readme) + package_license,
       classifiers=[
