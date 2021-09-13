@@ -33,10 +33,14 @@ def readfile(filename, split=False):
 file = open('mapclientplugins/fieldworkgait2392geomstep/__init__.py', 'r')
 lines = file.readlines()
 for line in lines:
+    # Is there an easier way to get all of these variables from the __init__
+    # file without executing the import statement?
     if line.startswith('__version__'):
         delim = '"' if '"' in line else "'"
         version = line.split(delim)[1]
-        break
+    elif line.startswith('__author__'):
+        delim = '"' if '"' in line else "'"
+        author = line.split(delim)[1]
 
 package_readme = readfile("README.md", split=True)[3:]  # skip title
 package_license = readfile("LICENSE")
@@ -63,7 +67,7 @@ setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
           "License :: OSI Approved :: Apache Software License",
           "Programming Language :: Python",
       ],
-      author=u'Ju Zhang',
+      author=author,
       author_email='',
       url='https://github.com/mapclient-plugins/fieldworkgait2392geomstep',
       license='APACHE',
