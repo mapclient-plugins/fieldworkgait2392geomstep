@@ -30,7 +30,7 @@ def readfile(filename, split=False):
 
 
 # This reads the plugin version from __init__.py.
-file = open('opensim/__init__.py', 'r')
+file = open('mapclientplugins/fieldworkgait2392geomstep/__init__.py', 'r')
 lines = file.readlines()
 for line in lines:
     if line.startswith('__version__'):
