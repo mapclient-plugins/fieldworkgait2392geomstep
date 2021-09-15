@@ -1,27 +1,28 @@
-
 import os
-from PySide import QtGui
+from PySide2 import QtGui, QtWidgets
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
 from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS, VALID_MODEL_MARKERS
 from mapclientplugins.fieldworkgait2392geomstep.landmarktablewidget import LandmarkComboBoxTextTable
 
-
 INVALID_STYLE_SHEET = 'background-color: rgba(239, 0, 0, 50)'
 DEFAULT_STYLE_SHEET = ''
 
-class ConfigureDialog(QtGui.QDialog):
-    '''
+
+class ConfigureDialog(QtWidgets.QDialog):
+    """
     Configure dialog to present the user with the options to configure this step.
-    '''
+    """
 
     def __init__(self, parent=None):
-        '''
+        """
         Constructor
-        '''
-        QtGui.QDialog.__init__(self, parent)
-        
+        """
+        QtWidgets.QDialog.__init__(self, parent)
+
         self._ui = Ui_Dialog()
         self._ui.setupUi(self)
+
+        self._workflow_location = None
 
         # Keep track of the previous identifier so that we can track changes
         # and know how many occurrences of the current identifier there should
@@ -34,9 +35,9 @@ class ConfigureDialog(QtGui.QDialog):
 
         # table of model and input marker pairs
         self.markerTable = LandmarkComboBoxTextTable(
-                                VALID_MODEL_MARKERS,
-                                self._ui.tableWidgetLandmarks,
-                                )
+            VALID_MODEL_MARKERS,
+            self._ui.tableWidgetLandmarks,
+        )
 
         self._setupDialog()
         self._makeConnections()
@@ -50,57 +51,69 @@ class ConfigureDialog(QtGui.QDialog):
 
     def _makeConnections(self):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
-        self._ui.lineEdit_osim_output_dir.textChanged.connect(self._osimOutputDirEdited)
-        self._ui.pushButton_osim_output_dir.clicked.connect(self._osimOutputDirClicked)
-        self._ui.pushButton_addLandmark.clicked.connect(self.markerTable.addLandmark)
-        self._ui.pushButton_removeLandmark.clicked.connect(self.markerTable.removeLandmark)
+        self._ui.lineEdit_osim_output_dir.textChanged.connect(
+            self._osimOutputDirEdited)
+        self._ui.pushButton_osim_output_dir.clicked.connect(
+            self._osimOutputDirClicked)
+        self._ui.pushButton_addLandmark.clicked.connect(
+            self.markerTable.addLandmark)
+        self._ui.pushButton_removeLandmark.clicked.connect(
+            self.markerTable.removeLandmark)
+
+    def setWorkflowLocation(self, location):
+        self._workflow_location = location
 
     def accept(self):
-        '''
+        """
         Override the accept method so that we can confirm saving an
         invalid configuration.
-        '''
-        result = QtGui.QMessageBox.Yes
+        """
+        result = QtWidgets.QMessageBox.Yes
         if not self.validate():
-            result = QtGui.QMessageBox.warning(self, 'Invalid Configuration',
-                'This configuration is invalid.  Unpredictable behaviour may result if you choose \'Yes\', are you sure you want to save this configuration?)',
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            result = QtWidgets.QMessageBox.warning(
+                self, 'Invalid Configuration',
+                'This configuration is invalid. Unpredictable behaviour may '
+                'result if you choose \'Yes\', are you sure you want to save '
+                'this configuration?)',
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No)
 
-        if result == QtGui.QMessageBox.Yes:
-            QtGui.QDialog.accept(self)
+        if result == QtWidgets.QMessageBox.Yes:
+            QtWidgets.QDialog.accept(self)
 
     def validate(self):
-        '''
-        Validate the configuration dialog fields.  For any field that is not valid
-        set the style sheet to the INVALID_STYLE_SHEET.  Return the outcome of the 
-        overall validity of the configuration.
-        '''
-        # Determine if the current identifier is unique throughout the workflow
-        # The identifierOccursCount method is part of the interface to the workflow framework.
-        idValue = self.identifierOccursCount(self._ui.lineEdit_id.text())
-        idValid = (idValue == 0) or (idValue == 1 and self._previousIdentifier == self._ui.lineEdit_id.text())
-        if idValid:
-            self._ui.lineEdit_id.setStyleSheet(DEFAULT_STYLE_SHEET)
-        else:
-            self._ui.lineEdit_id.setStyleSheet(INVALID_STYLE_SHEET)
+        """
+        Validate the configuration dialog fields.  For any field that is not
+        valid set the style sheet to the INVALID_STYLE_SHEET.  Return the
+        outcome of the overall validity of the configuration.
+        """
+        # Determine if the current identifier is unique throughout the
+        # workflow. The identifierOccursCount method is part of the interface
+        # to the workflow framework.
+        id_value = self.identifierOccursCount(self._ui.lineEdit_id.text())
+        id_valid = (id_value == 0) or (id_value == 1 and
+                                       self._previousIdentifier
+                                       == self._ui.lineEdit_id.text())
+        self._ui.lineEdit_id.setStyleSheet(
+            DEFAULT_STYLE_SHEET if id_valid else INVALID_STYLE_SHEET)
 
-        osimOutputDirValid = os.path.exists(self._ui.lineEdit_osim_output_dir.text())
-        if osimOutputDirValid:
-            self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET)
-        else:
-            self._ui.lineEdit_osim_output_dir.setStyleSheet(INVALID_STYLE_SHEET)
-            
-        valid = idValid and osimOutputDirValid
-        self._ui.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(valid)
+        location_valid = os.path.exists(os.path.join(
+            self._workflow_location, self._ui.lineEdit_osim_output_dir.text()))
+        self._ui.lineEdit_osim_output_dir.setStyleSheet(
+            DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
+
+        valid = id_valid and location_valid
+        self._ui.buttonBox.button(
+            QtWidgets.QDialogButtonBox.Ok).setEnabled(valid)
 
         return valid
 
     def getConfig(self):
-        '''
+        """
         Get the current value of the configuration from the dialog.  Also
-        set the _previousIdentifier value so that we can check uniqueness of the
-        identifier over the whole of the workflow.
-        '''
+        set the _previousIdentifier value so that we can check uniqueness of
+        the identifier over the whole of the workflow.
+        """
         self._previousIdentifier = self._ui.lineEdit_id.text()
         config = {}
         config['identifier'] = self._ui.lineEdit_id.text()
@@ -110,9 +123,9 @@ class ConfigureDialog(QtGui.QDialog):
         config['adj_marker_pairs'] = self.markerTable.getLandmarkPairs()
         print('DING')
         print(config['adj_marker_pairs'])
-        
+
         subject_mass = str(self._ui.lineEdit_subject_mass.text())
-        if len(subject_mass)==0 or (subject_mass is None):
+        if len(subject_mass) == 0 or (subject_mass is None):
             config['subject_mass'] = None
         else:
             config['subject_mass'] = float(subject_mass)
@@ -140,11 +153,11 @@ class ConfigureDialog(QtGui.QDialog):
         return config
 
     def setConfig(self, config):
-        '''
+        """
         Set the current value of the configuration for the dialog.  Also
-        set the _previousIdentifier value so that we can check uniqueness of the
-        identifier over the whole of the workflow.
-        '''
+        set the _previousIdentifier value so that we can check uniqueness of
+        the identifier over the whole of the workflow.
+        """
         self._previousIdentifier = config['identifier']
         self._ui.lineEdit_id.setText(config['identifier'])
         self._previousOsimOutputDir = config['osim_output_dir']
@@ -153,13 +166,13 @@ class ConfigureDialog(QtGui.QDialog):
         self._ui.comboBox_in_unit.setCurrentIndex(
             VALID_UNITS.index(
                 config['in_unit']
-                )
             )
+        )
         self._ui.comboBox_out_unit.setCurrentIndex(
             VALID_UNITS.index(
                 config['out_unit']
-                )
             )
+        )
 
         for mm, im in sorted(config['adj_marker_pairs'].items()):
             self.markerTable.addLandmark(mm, im)
@@ -188,10 +201,12 @@ class ConfigureDialog(QtGui.QDialog):
             self._ui.checkBox_GUI.setChecked(bool(False))
 
     def _osimOutputDirClicked(self):
-        location = QtGui.QFileDialog.getExistingDirectory(self, 'Select Directory', self._previousOsimOutputDir)
+        location = QtWidgets.QFileDialog.getExistingDirectory(
+            self, 'Select Directory', self._previousOsimOutputDir)
         if location:
             self._previousOsimOutputDir = location
-            self._ui.lineEdit_osim_output_dir.setText(location)
+            self._ui.lineEdit_osim_output_dir.setText(os.path.relpath(
+                location, self._workflow_location))
 
     def _osimOutputDirEdited(self):
         self.validate()
