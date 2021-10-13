@@ -253,8 +253,12 @@ class Gait2392GeomCustomiser(object):
         """
         Check that the directory for geom meshes exists. If not, create it.
         """
-        geom_dir = os.path.join(self._workflow_location,
-                                self.config['osim_output_dir'], GEOM_DIR)
+        output_directory = self.config['osim_output_dir']
+        if not os.path.isabs(output_directory):
+            output_directory = os.path.join(self._workflow_location, output_directory)
+
+        geom_dir = os.path.join(output_directory, GEOM_DIR)
+
         if not os.path.isdir(geom_dir):
             os.mkdir(geom_dir)
 
@@ -399,10 +403,11 @@ class Gait2392GeomCustomiser(object):
         Save the current OpenSim::Model object to an .osim XML file. The output
         directory is given by the plugin configuration.
         """
-        self.osimmodel.save(
-            os.path.join(self._workflow_location,
-                         self.config['osim_output_dir'], OSIM_FILENAME)
-        )
+        output_directory = self.config['osim_output_dir']
+        if not os.path.isabs(output_directory):
+            output_directory = os.path.join(self._workflow_location, output_directory)
+
+        self.osimmodel.save(os.path.join(output_directory, OSIM_FILENAME))
 
     # We may need to remove the scale factors that have been applied to the
     # Model before (in) this method. But only for the "generated" mesh files.
@@ -473,11 +478,14 @@ class Gait2392GeomCustomiser(object):
             gf_list = _split_tibia_fibula_gfs(ll_model.gf)
             acs_map_local = ll_model.acs.map_local
 
+        output_directory = self.config['osim_output_dir']
+        if not os.path.isabs(output_directory):
+            output_directory = os.path.join(self._workflow_location, output_directory)
+
         for i in range(len(file_names)):
-            vtp_full_path = os.path.join(self._workflow_location,
-                                         self.config['osim_output_dir'],
-                                         GEOM_DIR, file_names[i])
-            self._save_stl(gf_list[i], vtp_full_path, acs_map_local)
+            stl_full_path = os.path.join(output_directory, GEOM_DIR, file_names[i])
+
+            self._save_stl(gf_list[i], stl_full_path, acs_map_local)
 
         return file_names
 

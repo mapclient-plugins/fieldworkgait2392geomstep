@@ -72,9 +72,14 @@ class ConfigureDialog(QtWidgets.QDialog):
         valid set the style sheet to the INVALID_STYLE_SHEET.  Return the
         outcome of the overall validity of the configuration.
         """
-        location_valid = os.path.exists(os.path.join(self._workflow_location, self._ui.lineEdit_osim_output_dir.text()))
-        self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
+        output_directory = self._ui.lineEdit_osim_output_dir.text()
+        non_empty = len(output_directory)
+        if not os.path.isabs(output_directory):
+            output_directory = os.path.join(self._workflow_location, output_directory)
 
+        location_valid = os.path.exists(output_directory) and non_empty
+
+        self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
         self._ui.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(location_valid)
 
         return location_valid
@@ -165,12 +170,14 @@ class ConfigureDialog(QtWidgets.QDialog):
             self._ui.checkBox_GUI.setChecked(bool(False))
 
     def _osimOutputDirClicked(self):
-        location = QtWidgets.QFileDialog.getExistingDirectory(
-            self, 'Select Directory', self._previousOsimOutputDir)
+        location = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self._previousOsimOutputDir)
         if location:
             self._previousOsimOutputDir = location
-            self._ui.lineEdit_osim_output_dir.setText(os.path.relpath(
-                location, self._workflow_location))
+
+            if self._workflow_location:
+                self._ui.lineEdit_osim_output_dir.setText(os.path.relpath(location, self._workflow_location))
+            else:
+                self._ui.lineEdit_osim_output_dir.setText(location)
 
     def _osimOutputDirEdited(self):
         self.validate()
