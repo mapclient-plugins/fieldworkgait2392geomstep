@@ -24,20 +24,10 @@ class ConfigureDialog(QtWidgets.QDialog):
 
         self._workflow_location = None
 
-        # Keep track of the previous identifier so that we can track changes
-        # and know how many occurrences of the current identifier there should
-        # be.
-        self._previousIdentifier = ''
         self._previousOsimOutputDir = ''
-        # Set a place holder for a callable that will get set from the step.
-        # We will use this method to decide whether the identifier is unique.
-        self.identifierOccursCount = None
 
-        # table of model and input marker pairs
-        self.markerTable = LandmarkComboBoxTextTable(
-            VALID_MODEL_MARKERS,
-            self._ui.tableWidgetLandmarks,
-        )
+        # Table of model and input marker pairs
+        self.markerTable = LandmarkComboBoxTextTable(VALID_MODEL_MARKERS, self._ui.tableWidgetLandmarks)
 
         self._setupDialog()
         self._makeConnections()
@@ -50,15 +40,10 @@ class ConfigureDialog(QtWidgets.QDialog):
         self._ui.lineEdit_subject_mass.setValidator(QtGui.QDoubleValidator())
 
     def _makeConnections(self):
-        self._ui.lineEdit_id.textChanged.connect(self.validate)
-        self._ui.lineEdit_osim_output_dir.textChanged.connect(
-            self._osimOutputDirEdited)
-        self._ui.pushButton_osim_output_dir.clicked.connect(
-            self._osimOutputDirClicked)
-        self._ui.pushButton_addLandmark.clicked.connect(
-            self.markerTable.addLandmark)
-        self._ui.pushButton_removeLandmark.clicked.connect(
-            self.markerTable.removeLandmark)
+        self._ui.lineEdit_osim_output_dir.textChanged.connect(self._osimOutputDirEdited)
+        self._ui.pushButton_osim_output_dir.clicked.connect(self._osimOutputDirClicked)
+        self._ui.pushButton_addLandmark.clicked.connect(self.markerTable.addLandmark)
+        self._ui.pushButton_removeLandmark.clicked.connect(self.markerTable.removeLandmark)
 
     def setWorkflowLocation(self, location):
         self._workflow_location = location
@@ -87,40 +72,23 @@ class ConfigureDialog(QtWidgets.QDialog):
         valid set the style sheet to the INVALID_STYLE_SHEET.  Return the
         outcome of the overall validity of the configuration.
         """
-        # Determine if the current identifier is unique throughout the
-        # workflow. The identifierOccursCount method is part of the interface
-        # to the workflow framework.
-        id_value = self.identifierOccursCount(self._ui.lineEdit_id.text())
-        id_valid = (id_value == 0) or (id_value == 1 and
-                                       self._previousIdentifier
-                                       == self._ui.lineEdit_id.text())
-        self._ui.lineEdit_id.setStyleSheet(
-            DEFAULT_STYLE_SHEET if id_valid else INVALID_STYLE_SHEET)
+        location_valid = os.path.exists(os.path.join(self._workflow_location, self._ui.lineEdit_osim_output_dir.text()))
+        self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
 
-        location_valid = os.path.exists(os.path.join(
-            self._workflow_location, self._ui.lineEdit_osim_output_dir.text()))
-        self._ui.lineEdit_osim_output_dir.setStyleSheet(
-            DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
+        self._ui.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(location_valid)
 
-        valid = id_valid and location_valid
-        self._ui.buttonBox.button(
-            QtWidgets.QDialogButtonBox.Ok).setEnabled(valid)
-
-        return valid
+        return location_valid
 
     def getConfig(self):
         """
-        Get the current value of the configuration from the dialog.  Also
-        set the _previousIdentifier value so that we can check uniqueness of
-        the identifier over the whole of the workflow.
+        Get the current value of the configuration from the dialog.
         """
-        self._previousIdentifier = self._ui.lineEdit_id.text()
         config = {}
-        config['identifier'] = self._ui.lineEdit_id.text()
         config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
         config['in_unit'] = self._ui.comboBox_in_unit.currentText()
         config['out_unit'] = self._ui.comboBox_out_unit.currentText()
         config['adj_marker_pairs'] = self.markerTable.getLandmarkPairs()
+
         print('DING')
         print(config['adj_marker_pairs'])
 
@@ -154,12 +122,8 @@ class ConfigureDialog(QtWidgets.QDialog):
 
     def setConfig(self, config):
         """
-        Set the current value of the configuration for the dialog.  Also
-        set the _previousIdentifier value so that we can check uniqueness of
-        the identifier over the whole of the workflow.
+        Set the current value of the configuration for the dialog.
         """
-        self._previousIdentifier = config['identifier']
-        self._ui.lineEdit_id.setText(config['identifier'])
         self._previousOsimOutputDir = config['osim_output_dir']
         self._ui.lineEdit_osim_output_dir.setText(config['osim_output_dir'])
 

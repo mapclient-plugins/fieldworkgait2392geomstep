@@ -87,7 +87,6 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
 
         self._config = {}
-        self._config['identifier'] = ''
         self._config['GUI'] = False
         self._config['scale_other_bodies'] = True
         self._config['in_unit'] = 'mm'
@@ -97,6 +96,8 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config['subject_mass'] = None
         self._config['preserve_mass_distribution'] = False
         self._config['adj_marker_pairs'] = {}
+
+        self._identifier = ''
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)
         self._g2392Cust.set_workflow_location(self._location)
@@ -152,7 +153,6 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         """
         dlg = ConfigureDialog(self._main_window)
         dlg.setWorkflowLocation(self._location)
-        dlg.identifierOccursCount = self._identifierOccursCount
         dlg.setConfig(self._config)
         dlg.validate()
         dlg.setModal(True)
@@ -168,13 +168,13 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         """
         The identifier is a string that must be unique within a workflow.
         """
-        return self._config['identifier']
+        return self._identifier
 
     def setIdentifier(self, identifier):
         """
         The framework will set the identifier for this step when it is loaded.
         """
-        self._config['identifier'] = identifier
+        self._identifier = identifier
 
     def serialize(self):
         """
@@ -192,6 +192,5 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
 
         d = ConfigureDialog(self._main_window)
         d.setWorkflowLocation(self._location)
-        d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()
