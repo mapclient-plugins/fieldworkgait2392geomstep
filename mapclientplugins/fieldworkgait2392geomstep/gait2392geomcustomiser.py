@@ -55,7 +55,7 @@ TIBFIB_SUBMESH_ELEMS = {'tibia': range(0, 46),
                         }
 TIBFIB_BASISTYPES = {'tri10': 'simplex_L3_L3', 'quad44': 'quad_L3_L3'}
 
-GEOM_DIR = '../Geometry'
+GEOM_DIR = '../output/Geometry'
 
 VALID_UNITS = ('nm', 'um', 'mm', 'cm', 'm', 'km')
 VALID_MODEL_MARKERS = sorted(list(scaler.virtualmarker.markers.keys()))
@@ -253,8 +253,7 @@ class Gait2392GeomCustomiser(object):
         """
         Check that the directory for geom meshes exists. If not, create it.
         """
-        geom_dir = os.path.join(self._workflow_location,
-                                self.config['osim_output_dir'], GEOM_DIR)
+        geom_dir = os.path.join(self._workflow_location, GEOM_DIR)
         if not os.path.isdir(geom_dir):
             os.mkdir(geom_dir)
 
@@ -474,9 +473,7 @@ class Gait2392GeomCustomiser(object):
             acs_map_local = ll_model.acs.map_local
 
         for i in range(len(file_names)):
-            vtp_full_path = os.path.join(self._workflow_location,
-                                         self.config['osim_output_dir'],
-                                         GEOM_DIR, file_names[i])
+            vtp_full_path = os.path.join(self._workflow_location, GEOM_DIR, file_names[i])
             self._save_stl(gf_list[i], vtp_full_path, acs_map_local)
 
         return file_names
