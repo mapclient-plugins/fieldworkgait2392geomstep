@@ -8,8 +8,8 @@ distances between landmarks/markers on the customised geometry and default
 
 import numpy as np
 from numpy.linalg import inv
-from gias2.musculoskeletal import osim
-from gias2.common import math
+from gias3.musculoskeletal import osim
+from gias3.common import math
 
 # from mapclientplugins.fieldworkgait2392geomstep import virtualmarker
 from . import virtualmarker
@@ -246,5 +246,183 @@ def calc_scale_factors_all_bodies(ll, unit_scaling, scale_other_bodies=True):
         scale_list.append(
             osim.Scale(average_scale_factors, 'toes_r_scaling', 'toes_r')
         )
+
+    return scale_list
+
+
+def scale_wrapping_objects(body, sf):
+    """
+    Scale the wrapping objects using the same scale factors used to scale the body
+    the wrapping objects are associated with
+    """
+
+    wrapObjects = body._osimBody.getWrapObjectSet()
+    for i in range(wrapObjects.getSize()):
+        wrapObject = wrapObjects.get(i).getName()
+        old_radii = body._osimBody.getWrapObject(wrapObject).getDimensionsString()
+        body.scaleWrapObject(wrapObject, sf)
+        new_radii = body._osimBody.getWrapObject(wrapObject).getDimensionsString()
+
+        print('wrapping object {}: {} -> {}'.format(wrapObject, old_radii, new_radii))
+
+    return body
+
+
+def scale_joint(joint, sfs, bodies):
+    """
+    Scales a joints properties according to a 3-tuple of scale factors.
+    Uses joint.scale to calculate the new parameters but reverts scaling
+    to 1 and sets parameters explicitly.
+
+    inputs
+    ------
+    joint: osim.Joint instance
+    sfs: a list of 3-tuple of x,y,z scale factors
+    bodies: list of names of bodies connected to joint
+
+    returns
+    -------
+    joint: scaled osim.Joint instance
+    """
+    print('scaling {} by {}'.format(joint.name, sfs))
+
+    old_location = joint.location
+    old_locationInParent = joint.locationInParent
+
+    # apply opensim scaling
+    joint_scales = []
+    for bi, bname in enumerate(bodies):
+        s = osim.Scale(
+            sfs[bi],
+            '{}_scale_{}'.format(joint.name, bname),
+            bname,
+        )
+        joint_scales.append(s)
+
+    joint.scale(*joint_scales)
+
+    # get new joint properties
+    new_location = joint.location
+    new_locationInParent = joint.locationInParent
+
+    # scale back to 1,1,1
+    # sf_inv = 1.0/np.array(sf)
+    joint_scales = []
+    for bi, bname in enumerate(bodies):
+        s = osim.Scale(
+            1.0 / sfs[bi],
+            '{}_scale_{}'.format(joint.name, bname),
+            bname,
+        )
+        joint_scales.append(s)
+
+    joint.scale(*joint_scales)
+
+    # set new params
+    joint.location = new_location
+    joint.locationInParent = new_locationInParent
+
+    print('location: {} -> {}'.format(old_location, new_location))
+    print('locationInParent: {} -> {}'.format(old_locationInParent, new_locationInParent))
+
+    return joint
+
+
+def scale_body_muscle_params(model, bodyscales, state):
+    """
+    Scales a body's muscle tendon slack length and optimal fibre length
+    properties according to a 3-tuple of scale factors. Uses Muscle.scale()
+    to calculate the new parameters but reverts scaling to 1 and 
+    sets parameters explicitly.
+
+    inputs
+    ------
+    model: osim.Model instance
+    bodyscales: dictionary of body names and 3-tuple body scale factors
+    state: model state at which scaling is to be performed
+
+    returns
+    -------
+    None
+    """
+
+    raise (DeprecationWarning, 'This does not work as it does not use muscle prescale, scale and postscale')
+
+    # get all muscles of the body
+    muscles = _get_segments_muscles(model, list(bodyscales.keys()))
+    if len(muscles) == 0:
+        print('WARNING: no muscles found for bodies {}'.format(list(bodyscales.keys())))
+
+    # for each muscle, apply scaling, get opt fibre length and
+    # tendon slack length, scale back, then apply those two params
+    for mus in muscles:
+        print('Scaling muscle {}'.format(mus.name))
+        old_ofl = mus.optimalFiberLength
+        old_tsl = mus.tendonSlackLength
+
+        mus_scales = []
+        for bname, bscale in bodyscales.items():
+            s = osim.Scale(
+                bscale,
+                '{}_scale_{}'.format(mus.name, bname),
+                bname,
+            )
+            mus_scales.append(s)
+        mus.scale(state, *mus_scales)
+
+        new_ofl = mus.optimalFiberLength
+        new_tsl = mus.tendonSlackLength
+
+        mus_inv_scales = []
+        for bname, bscale in bodyscales.items():
+            s = osim.Scale(
+                1.0 / np.array(bscale),
+                '{}_inv_scale_{}'.format(mus.name, bname),
+                bname,
+            )
+            mus_inv_scales.append(s)
+        mus.scale(state, *mus_inv_scales)
+
+        mus.optimalFiberLength = new_ofl
+        mus.tendonSlackLength = new_tsl
+
+        print('optimal fiber length: {} -> {}'.format(old_ofl, new_ofl))
+        print('tendon slack length: {} -> {}'.format(old_tsl, new_tsl))
+
+
+def calc_scale_factors_all_bodies_old(LL, unit_scaling, scale_other_bodies=True):
+    """
+    Returns a list of scale factors, on for each body in the model
+    """
+
+    sf_list = []
+        # torso
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'torso_scaling', 'torso')
+    )
+
+    # talus
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'talus_l_scaling', 'talus_l')
+    )
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'talus_r_scaling', 'talus_r')
+    )
+
+    # calcn
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'calcn_l_scaling', 'calcn_l')
+    )
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'calcn_r_scaling', 'calcn_r')
+    )
+
+    # toes
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'toes_l_scaling', 'toes_l')
+    )
+    scale_list.append(
+        osim.Scale(average_scale_factors, 'toes_r_scaling', 'toes_r')
+    )
 
     return scale_list

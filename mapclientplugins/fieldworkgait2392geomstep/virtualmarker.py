@@ -6,7 +6,7 @@ import os
 import opensim
 import numpy as np
 
-from gias2.musculoskeletal.osim import Marker
+from gias3.musculoskeletal.osim import Marker
 
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 MARKERSET_PATH = str(os.path.join(SELF_DIR, 'data',

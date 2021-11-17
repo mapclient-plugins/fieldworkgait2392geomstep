@@ -5,45 +5,48 @@ import os
 import sys
 import numpy as np
 import copy
-sys.path.append('../')
+
 import gait2392geomcustomiser as g23
-from gias2.fieldwork.field import geometric_field
-from gias2.musculoskeletal.bonemodels import bonemodels
-from gias2.musculoskeletal.bonemodels import lowerlimbatlasfit
-from gias2.musculoskeletal import mocap_landmark_preprocess
-from gias2.visualisation import fieldvi
-reload(g23)
+from gias3.fieldwork.field import geometric_field
+from gias3.musculoskeletal.bonemodels import bonemodels
+from gias3.musculoskeletal.bonemodels import lowerlimbatlasfit
+from gias3.musculoskeletal import mocap_landmark_preprocess
+from gias3.visualisation import fieldvi
 
 from lltransform import LLTransformData
+
 import trcdata
 
 SELF_DIRECTORY = os.path.split(__file__)[0]
 _shapeModelFilenameLeft = os.path.join(SELF_DIRECTORY, 'data/shape_models/LLP26_rigid.pc')
-_boneModelFilenamesLeft = {'pelvis': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_mean_rigid_LLP26.geof'),
-                                  os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.ens'),
-                                  os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.mesh'),
-                                  ),
-                       'femur': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/femur_left_mean_rigid_LLP26.geof'),
-                                 os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/femur_left_quartic_flat.ens'),
-                                 os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/femur_left_quartic_flat.mesh'),
-                                 ),
-                       'patella': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/patella_left_mean_rigid_LLP26.geof'),
-                                   os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/patella_11_left.ens'),
-                                   os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/patella_11_left.mesh'),
-                                   ),
-                       'tibiafibula': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_cubic_left_mean_rigid_LLP26.geof'),
-                                       os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_left_cubic_flat.ens'),
-                                       os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_left_cubic_flat.mesh'),
-                                       ),
-                       }
+_boneModelFilenamesLeft = {
+    'pelvis': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_mean_rigid_LLP26.geof'),
+               os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.ens'),
+               os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.mesh'),
+               ),
+    'femur': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/femur_left_mean_rigid_LLP26.geof'),
+              os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/femur_left_quartic_flat.ens'),
+              os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/femur_left_quartic_flat.mesh'),
+              ),
+    'patella': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/patella_left_mean_rigid_LLP26.geof'),
+                os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/patella_11_left.ens'),
+                os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/patella_11_left.mesh'),
+                ),
+    'tibiafibula': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_cubic_left_mean_rigid_LLP26.geof'),
+                    os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_left_cubic_flat.ens'),
+                    os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_left_cubic_flat.mesh'),
+                    ),
+}
+
 
 def _outputModelDict(LL):
     outputModelDict = dict([(m[0], m[1].gf) for m in LL.models.items()])
     return outputModelDict
 
-#===================================================#
+
+# ===================================================#
 # fitting Parameters                                #
-#===================================================#
+# ===================================================#
 model_name = 'lower_limb_left_LLP26'
 
 # mocap landmarks
@@ -51,25 +54,26 @@ load_mocap = True
 mocap_file = 'data/example_static1.trc'
 mocap_frame = 5
 target_landmark_names = ['L.ASIS', 'R.ASIS', 'V.Sacral', 'L.Knee.Medial',
-                        'L.Knee', 'L.Ankle.Medial', 'L.Ankle',
-                        ]
+                         'L.Knee', 'L.Ankle.Medial', 'L.Ankle',
+                         ]
 source_landmark_names = ['pelvis-LASIS', 'pelvis-RASIS', 'pelvis-Sacral',
                          'femur-MEC', 'femur-LEC', 'tibiafibula-MM',
                          'tibiafibula-LM',
-                        ]
+                         ]
 
 # fitting parameters
-pc_modes = [0,]
+pc_modes = [0, ]
 mweight = 0.1
-min_args = {'method':'L-BFGS-B',
-            'jac':False,
-            'bounds':None, 'tol':1e-6,
-            'options':{'eps':1e-5},
-            }
+min_args = {
+    'method': 'L-BFGS-B',
+    'jac': False,
+    'bounds': None, 'tol': 1e-6,
+    'options': {'eps': 1e-5},
+}
 
-#===================================================#
+# ===================================================#
 # initialise                                        #
-#===================================================#
+# ===================================================#
 # load lower limb model
 LL = bonemodels.LowerLimbLeftAtlas(model_name)
 LL.bone_files = _boneModelFilenamesLeft
@@ -82,22 +86,20 @@ trc.load(mocap_file)
 all_landmarks = trc.get_frame(mocap_frame)
 target_landmark_coords_raw = np.array([all_landmarks[l] for l in target_landmark_names])
 target_landmark_coords = np.array(mocap_landmark_preprocess.preprocess_lower_limb(
-                                  5.0, 10.0, *target_landmark_coords_raw))
+    5.0, 10.0, *target_landmark_coords_raw))
 
-
-#===================================================#
+# ===================================================#
 # Fit                                               #
-#===================================================#
+# ===================================================#
 # single stage fit
-fitting_xs,\
-opt_landmark_dist,\
-opt_landmark_rmse,\
+fitting_xs, \
+opt_landmark_dist, \
+opt_landmark_rmse, \
 min_info = lowerlimbatlasfit.fit(
-                LL, target_landmark_coords, source_landmark_names,
-                pc_modes, mweight, minimise_args=min_args)
+    LL, target_landmark_coords, source_landmark_names,
+    pc_modes, mweight, minimise_args=min_args)
 fitted_landmark_coords = min_info['opt_source_landmarks']
 print('Fitted landmark RMSE: {}'.format(opt_landmark_rmse))
-
 
 inputModelDict = _outputModelDict(LL)
 
@@ -133,9 +135,9 @@ cust.customise()
 knee_angles = g23.calc_knee_angles(cust.LL)
 print(knee_angles)
 
-#============================================#
+# ============================================#
 # Visualisation                              #
-#============================================#
+# ============================================#
 # V = fieldvi.Fieldvi()
 # V.GFD = [6,6]
 # V.displayGFNodes = False

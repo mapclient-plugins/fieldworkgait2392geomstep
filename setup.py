@@ -46,10 +46,12 @@ package_readme = readfile("README.md", split=True)[3:]  # skip title
 package_license = readfile("LICENSE")
 package_dependencies = [
     "transforms3d",
-    "setuptools",
     "PySide2",
     "numpy",
-    "gias2",
+    "gias3.musculoskeletal",
+    "gias3.mesh",
+    "gias3.musculoskeletal",
+    "gias3.common",
     "opensim >= 4.2"
 ]
 package_data = {
@@ -58,23 +60,24 @@ package_data = {
     ],
 }
 
-setup(name=u'mapclientplugins.fieldworkgait2392geomstep',
-      version=version,
-      description='',
-      long_description='\n'.join(package_readme) + package_license,
-      classifiers=[
-          "Development Status :: 3 - Alpha",
-          "License :: OSI Approved :: Apache Software License",
-          "Programming Language :: Python",
-      ],
-      author=author,
-      author_email='',
-      url='https://github.com/mapclient-plugins/fieldworkgait2392geomstep',
-      license='APACHE',
-      packages=find_packages(exclude=['ez_setup', ]),
-      namespace_packages=['mapclientplugins'],
-      include_package_data=True,
-      package_data=package_data,
-      zip_safe=False,
-      install_requires=package_dependencies,
-      )
+setup(
+    name=u'mapclientplugins.fieldworkgait2392geomstep',
+    version=version,
+    description='',
+    long_description='\n'.join(package_readme) + package_license,
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python",
+    ],
+    author=author,
+    author_email='',
+    url='https://github.com/mapclient-plugins/fieldworkgait2392geomstep',
+    license='APACHE',
+    packages=find_packages(exclude=['ez_setup', ]),
+    namespace_packages=['mapclientplugins'],
+    include_package_data=True,
+    package_data=package_data,
+    zip_safe=False,
+    install_requires=package_dependencies,
+)

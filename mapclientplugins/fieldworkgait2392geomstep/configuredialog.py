@@ -128,8 +128,8 @@ class ConfigureDialog(QtWidgets.QDialog):
         config['in_unit'] = self._ui.comboBox_in_unit.currentText()
         config['out_unit'] = self._ui.comboBox_out_unit.currentText()
         config['adj_marker_pairs'] = self.markerTable.getLandmarkPairs()
-        print('DING')
-        print(config['adj_marker_pairs'])
+        # print('DING')
+        # print(config['adj_marker_pairs'])
 
         subject_mass = str(self._ui.lineEdit_subject_mass.text())
         if len(subject_mass) == 0 or (subject_mass is None):
