@@ -86,17 +86,11 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#gias-lowerlimb'))
 
-        self._config = {}
-        self._config['identifier'] = ''
-        self._config['GUI'] = False
-        self._config['scale_other_bodies'] = True
-        self._config['in_unit'] = 'mm'
-        self._config['out_unit'] = 'm'
-        self._config['osim_output_dir'] = ''
-        self._config['write_osim_file'] = True
-        self._config['subject_mass'] = None
-        self._config['preserve_mass_distribution'] = False
-        self._config['adj_marker_pairs'] = {}
+        self._config = {
+            'identifier': '', 'GUI': False, 'scale_other_bodies': True, 'in_unit': 'mm',
+            'out_unit': 'm', 'osim_output_dir': '', 'write_osim_file': True,
+            'subject_mass': None, 'preserve_mass_distribution': False, 'adj_marker_pairs': {}
+        }
 
         self._g2392Cust = Gait2392GeomCustomiser(self._config)
         self._g2392Cust.set_workflow_location(self._location)

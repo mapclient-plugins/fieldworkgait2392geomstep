@@ -30,29 +30,31 @@ from gias3.musculoskeletal.bonemodels import bonemodels
 from gias3.musculoskeletal.bonemodels import lowerlimbatlas
 from gias3.musculoskeletal import osim
 
-# from mapclientplugins.fieldworkgait2392geomstep import scaler
 from . import scaler
 
 # =============================================================================#
 SELF_DIR = os.path.split(os.path.realpath(__file__))[0]
 TEMPLATE_OSIM_PATH = os.path.join(SELF_DIR, 'data', 'gait2392_simbody.osim')
 OSIM_FILENAME = 'gait2392_simbody.osim'
-OSIM_BODY_NAME_MAP = {'pelvis': 'pelvis',
-                      'femur-l': 'femur_l',
-                      'femur-r': 'femur_r',
-                      'tibiafibula-l': 'tibia_l',
-                      'tibiafibula-r': 'tibia_r',
-                      }
+OSIM_BODY_NAME_MAP = {
+    'pelvis': 'pelvis',
+    'femur-l': 'femur_l',
+    'femur-r': 'femur_r',
+    'tibiafibula-l': 'tibia_l',
+    'tibiafibula-r': 'tibia_r',
+}
 PELVIS_SUBMESHES = ('RH', 'LH', 'sac')
-PELVIS_SUBMESH_ELEMS = {'RH': range(0, 73),
-                        'LH': range(73, 146),
-                        'sac': range(146, 260),
-                        }
+PELVIS_SUBMESH_ELEMS = {
+    'RH': range(0, 73),
+    'LH': range(73, 146),
+    'sac': range(146, 260),
+}
 PELVIS_BASISTYPES = {'tri10': 'simplex_L3_L3', 'quad44': 'quad_L3_L3'}
 TIBFIB_SUBMESHES = ('tibia', 'fibula')
-TIBFIB_SUBMESH_ELEMS = {'tibia': range(0, 46),
-                        'fibula': range(46, 88),
-                        }
+TIBFIB_SUBMESH_ELEMS = {
+    'tibia': range(0, 46),
+    'fibula': range(46, 88),
+}
 TIBFIB_BASISTYPES = {'tri10': 'simplex_L3_L3', 'quad44': 'quad_L3_L3'}
 
 GEOM_DIR = '../output/Geometry'
@@ -379,7 +381,7 @@ class Gait2392GeomCustomiser(object):
         sf : length 3 ndarray
             scale factor array
         """
-        
+
         if bodyname not in self._body_scale_factors:
             sf = self._body_scalers[bodyname](self.LL, self._unit_scaling)
             self._body_scale_factors[bodyname] = sf
@@ -400,34 +402,34 @@ class Gait2392GeomCustomiser(object):
         #         )
         sf = self._get_osimbody_scale_factors('pelvis')
         scaler.scale_body_mass_inertia(osim_pelvis, sf)
-        
-        #scale wrapping surfaces
+
+        # scale wrapping surfaces
         scaler.scale_wrapping_objects(osim_pelvis, sf)
-		
+
         if self.verbose:
             print('scale factor: {}'.format(sf))
-		
+
         # update ground-pelvis joint
         if self.verbose:
             print('updating pelvis-ground joint...')
 
-        pelvis_origin = pelvis.acs.o  
+        pelvis_origin = pelvis.acs.o
         self.osimmodel.joints['ground_pelvis'].locationInParent = \
-            pelvis_origin*self._unit_scaling # in ground CS
+            pelvis_origin * self._unit_scaling  # in ground CS
         self.osimmodel.joints['ground_pelvis'].location = \
-            np.array((0,0,0), dtype=float)*self._unit_scaling  # in pelvis CS
+            np.array((0, 0, 0), dtype=float) * self._unit_scaling  # in pelvis CS
 
         if self.verbose:
             print(
                 'location in parent: {}'.format(
                     self.osimmodel.joints['ground_pelvis'].locationInParent
-                    )
                 )
+            )
             print(
                 'location: {}'.format(
                     self.osimmodel.joints['ground_pelvis'].location
-                    )
                 )
+            )
 
         # update coordinate defaults
         pelvis_ground_joint = self.osimmodel.joints['ground_pelvis']
@@ -449,8 +451,8 @@ class Gait2392GeomCustomiser(object):
                     pelvis_ground_joint.coordSets['pelvis_tilt'].defaultValue,
                     pelvis_ground_joint.coordSets['pelvis_list'].defaultValue,
                     pelvis_ground_joint.coordSets['pelvis_rotation'].defaultValue,
-                    )
                 )
+            )
 
         # update mesh
         if self.verbose:
@@ -462,27 +464,27 @@ class Gait2392GeomCustomiser(object):
         ## sacrum.vtp
         sac_vtp_full_path = os.path.join(
             self.config['osim_output_dir'], GEOM_DIR, SACRUM_FILENAME
-            )
+        )
         sac_vtp_osim_path = os.path.join(GEOM_DIR, SACRUM_FILENAME)
         self._save_vtp(sacgf, sac_vtp_full_path, pelvis.acs.map_local)
 
         ## pelvis.vtp
         rh_vtp_full_path = os.path.join(
             self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME
-            )
+        )
         rh_vtp_osim_path = os.path.join(GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
         self._save_vtp(rhgf, rh_vtp_full_path, pelvis.acs.map_local)
 
         ## l_pelvis.vtp
         lh_vtp_full_path = os.path.join(
             self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_LEFT_FILENAME
-            )
+        )
         lh_vtp_osim_path = os.path.join(GEOM_DIR, HEMIPELVIS_LEFT_FILENAME)
         self._save_vtp(lhgf, lh_vtp_full_path, pelvis.acs.map_local)
 
         osim_pelvis.setDisplayGeometryFileName(
             [sac_vtp_osim_path, rh_vtp_osim_path, lh_vtp_osim_path]
-            )
+        )
 
     def cust_osim_femur_l(self):
         self._cust_osim_femur('l')
@@ -495,23 +497,23 @@ class Gait2392GeomCustomiser(object):
         if self.verbose:
             print('\nCUSTOMISING FEMUR {}'.format(side.upper()))
 
-        if (side!='l') and (side!='r'):
+        if (side != 'l') and (side != 'r'):
             raise ValueError('Invalid side')
 
-        femur = self.LL.models['femur-'+side]
+        femur = self.LL.models['femur-' + side]
         pelvis = self.LL.models['pelvis']
         osim_femur = self.osimmodel.bodies[
-                        OSIM_BODY_NAME_MAP[
-                            'femur-'+side
-                            ]
-                        ]
+            OSIM_BODY_NAME_MAP[
+                'femur-' + side
+                ]
+        ]
 
         # scale inertial properties
         # sf = scaler.calc_femur_scale_factors(
         #         self.LL, self._unit_scaling,
         #         side=None,
         #         )
-        sf = self._get_osimbody_scale_factors('femur_'+side)
+        sf = self._get_osimbody_scale_factors('femur_' + side)
         scaler.scale_body_mass_inertia(osim_femur, sf)
         if self.verbose:
             print('scale factor: {}'.format(sf))
@@ -526,7 +528,7 @@ class Gait2392GeomCustomiser(object):
         if self.verbose:
             print('updating hip {} joint...'.format(side))
 
-        if side=='l':
+        if side == 'l':
             hjc = pelvis.landmarks['pelvis-LHJC']
         else:
             hjc = pelvis.landmarks['pelvis-RHJC']
@@ -539,21 +541,21 @@ class Gait2392GeomCustomiser(object):
             print(
                 'location in parent: {}'.format(
                     self.osimmodel.joints['hip_{}'.format(side)].locationInParent
-                    )
                 )
+            )
             print(
                 'location: {}'.format(
                     self.osimmodel.joints['hip_{}'.format(side)].location
-                    )
                 )
+            )
 
         # update coordinate defaults
         if self._hasInputLL:
-            if side=='l':
+            if side == 'l':
                 flex, rot, add = self.LL.hip_rot_l
             else:
                 flex, rot, add = self.LL.hip_rot_r
-            
+
         else:
             flex, rot, add = calc_hip_angles(pelvis, femur, side)
 
@@ -571,27 +573,27 @@ class Gait2392GeomCustomiser(object):
                     hip_joint.coordSets['hip_flexion_{}'.format(side)].defaultValue,
                     hip_joint.coordSets['hip_adduction_{}'.format(side)].defaultValue,
                     hip_joint.coordSets['hip_rotation_{}'.format(side)].defaultValue,
-                    )
                 )
+            )
 
         # update mesh l_femur.vtp
         if self.verbose:
             print('updating visual geometry...')
 
         self._check_geom_path()
-        if side=='l':
+        if side == 'l':
             femur_vtp_full_path = os.path.join(
                 self.config['osim_output_dir'], GEOM_DIR, FEMUR_LEFT_FILENAME
-                )
+            )
             femur_vtp_osim_path = os.path.join(GEOM_DIR, FEMUR_LEFT_FILENAME)
-        elif side=='r':
+        elif side == 'r':
             femur_vtp_full_path = os.path.join(
                 self.config['osim_output_dir'], GEOM_DIR, FEMUR_RIGHT_FILENAME
-                )
+            )
             femur_vtp_osim_path = os.path.join(GEOM_DIR, FEMUR_RIGHT_FILENAME)
 
         self._save_vtp(femur.gf, femur_vtp_full_path, femur.acs.map_local)
-        osim_femur.setDisplayGeometryFileName([femur_vtp_osim_path,])
+        osim_femur.setDisplayGeometryFileName([femur_vtp_osim_path, ])
 
     def _get_osim_knee_spline_xk(self, side):
         """
@@ -894,7 +896,7 @@ class Gait2392GeomCustomiser(object):
                 offset = self.back_offset
 
             joint.locationInParent = (
-                    location_in_parent * self._unit_scaling) + offset
+                                             location_in_parent * self._unit_scaling) + offset
             if location is not None:
                 joint.location = location * self._unit_scaling
 
