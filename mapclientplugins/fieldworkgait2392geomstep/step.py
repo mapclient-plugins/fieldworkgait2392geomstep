@@ -111,19 +111,19 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._g2392Cust.customise()
         self._doneExecution()
 
-    def setPortData(self, index, dataIn):
+    def setPortData(self, index, data_in):
         """
         Add your code here that will set the appropriate objects for this step.
         The index is the index of the port in the port list.  If there is only
         one uses port for this step then the index can be ignored.
         """
         if index == 0:
-            self.inputLLAtlas = dataIn  # gias-lowerlimb
+            self.inputLLAtlas = data_in  # gias-lowerlimb
         elif index == 1:
-            self._g2392Cust.input_markers = dataIn
+            self._g2392Cust.input_markers = data_in
         else:
-            self.inputModels = dataIn  # ju#fieldworkmodeldict
-            print(self.inputModels)
+            self.inputModels = data_in  # ju#fieldworkmodeldict
+            # print(self.inputModels)
 
     def getPortData(self, index):
         """

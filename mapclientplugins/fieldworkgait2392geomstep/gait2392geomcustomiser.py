@@ -807,7 +807,7 @@ class Gait2392GeomCustomiser(object):
         if self.config['subject_mass'] is None:
             mass = -1.0
         else:
-            mass = self.config['subject_mass']
+            mass = float(self.config['subject_mass'])
 
         self.osimmodel.scale(self._osimmodel_state, *self.scale_set,
                              preserve_mass_distribution=self.config[
@@ -871,10 +871,12 @@ class Gait2392GeomCustomiser(object):
                 location = np.array([0, 0, 0], dtype=float)
 
                 if side == 'l':
-                    flex, add = self.LL.knee_rot_l
+                    angles = self.LL.knee_rot_l
                 else:
-                    flex, add = self.LL.knee_rot_r
-                joint.coordSets[f'knee_angle_{side}'].defaultValue = flex
+                    angles = self.LL.knee_rot_r
+
+                # Angles is an array of rotation about the joint (flexion, rotation, adduction)
+                joint.coordSets[f'knee_angle_{side}'].defaultValue = angles[0]
 
             elif joint_name == "ankle_l" or joint_name == "ankle_r":
                 side = joint_name[-1]
