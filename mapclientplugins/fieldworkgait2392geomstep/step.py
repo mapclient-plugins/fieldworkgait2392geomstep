@@ -43,7 +43,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
 
     Inputs
     ------
-    gias-lowerlimb : gias2.musculoskeletal.bonemodel.LowerLimbAtlas instance
+    gias-lowerlimb : gias3.musculoskeletal.bonemodel.LowerLimbAtlas instance
         Lower limb model to be used to customise gait2392.
     fieldworkmodeldict : dict [optional]
         Bone models to be used to customisation gait2392.
@@ -60,7 +60,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
     -------
     opensimmodel : opensim.model instance
         The customised gait2392 opensim model
-    gias-lowerlimb : gias2.musculoskeletal.bonemodel.LowerLimbAtlas instance
+    gias-lowerlimb : gias3.musculoskeletal.bonemodel.LowerLimbAtlas instance
         The lowerlimb model used in the customisation
     """
 
