@@ -1,5 +1,5 @@
 import os
-from PySide2 import QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets
 from mapclientplugins.fieldworkgait2392geomstep.ui_configuredialog import Ui_Dialog
 from mapclientplugins.fieldworkgait2392geomstep.gait2392geomcustomiser import VALID_UNITS, VALID_MODEL_MARKERS
 from mapclientplugins.fieldworkgait2392geomstep.landmarktablewidget import LandmarkComboBoxTextTable
