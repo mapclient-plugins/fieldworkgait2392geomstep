@@ -216,7 +216,7 @@ class Gait2392GeomCustomiser(object):
         self.femur_scaling = 1.0
         self.petalla_scaling = 1.0
         self.tibfib_scaling = 1.0
-        self.LL = None  # Gias2 LowerLimbAtlas object.
+        self.LL = None  # GIAS3 LowerLimbAtlas object.
         self._hasInputLL = False
         self._workflow_location = None
         self.osimmodel = None  # OpenSim Model.
@@ -261,7 +261,7 @@ class Gait2392GeomCustomiser(object):
 
     def set_lowerlimb_atlas(self, ll):
         """
-        Set the Gias2 LowerLimbAtlas and calculates the set of Scales (and from
+        Set the GIAS3 LowerLimbAtlas and calculates the set of Scales (and from
         this the set of scale factors) that will be used to scale the model.
         """
         self.LL = ll
@@ -820,9 +820,9 @@ class Gait2392GeomCustomiser(object):
     def update_joints(self):
         """
         Location and LocationInParent are modified according to the position of
-        the joints in the Gias2 model.
+        the joints in the GIAS3 model.
         """
-        # Only the following Joints have Gias2 associates. All other joints
+        # Only the following Joints have GIAS3 associates. All other joints
         # should be scaled by the relevant body scale factors (scale_model).
         joint_names = ["ground_pelvis", "hip_l", "hip_r", "knee_l", "knee_r",
                        "ankle_l", "ankle_r", "back"]

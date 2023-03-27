@@ -1,7 +1,7 @@
 Fieldwork Gait2392 Geom Step
 ================================
 MAP Client plugin for customising the OpenSim Gait2392 model using
-a GIAS2 lowerlimb model (see fieldworklowerlimb2sidegenerationstep).
+a GIAS3 lowerlimb model (see fieldworklowerlimb2sidegenerationstep).
 
 The following opensim model components are modified to match the input
 lowerlimb model.
@@ -16,7 +16,7 @@ lowerlimb model.
     - Knee joint splines are customised to match the tibia trajectory with respect to knee flexion in the input model.
 - Markers
     - The default Gait2392 markerset is customised based on a combination of model landmark position and linear scaling.
-    - Markers that correspond to GIAS2 model landmarks are assign the model landmark positions with soft-tissue offset.
+    - Markers that correspond to GIAS3 model landmarks are assign the model landmark positions with soft-tissue offset.
     - Markers without correspondences are linearly scaled according their respective body's scale factors.
     - A user-defined set of model markers can be adjusted to their corresponding input marker position.
 - Muscles
@@ -24,20 +24,20 @@ lowerlimb model.
     - Wrapping objects are **not** supported.
     - Tendon slack lengths and optimal fibre lengths are updated to reflect new joint positions.
     
-Body and Joint parameters and display models of bodies not in the GIAS2 lowerlimb model (torso, talus, calcaneus, toes) are scale by the average scale factor of the model bodies. See the Scale Factor Calculation section more detail about how scale factors are calculated.
+Body and Joint parameters and display models of bodies not in the GIAS3 lowerlimb model (torso, talus, calcaneus, toes) are scale by the average scale factor of the model bodies. See the Scale Factor Calculation section more detail about how scale factors are calculated.
 
 Requires
 --------
-- GIAS2: https://bitbucket.org/jangle/gias2
+- GIAS3: https://github.com/musculoskeletal/gias3
 - OpenSim 3.3: https://simtk.org/frs/?group_id=91
 - MAP Client: https://github.com/MusculoskeletalAtlasProject/mapclient
 
 Inputs
 ------
-- **gias-lowerlimb** [GIAS2 LowerLimbAtlas instance]: GIAS2 lowerlimb model to be used to customise Gait2392.
+- **gias-lowerlimb** [GIAS3 LowerLimbAtlas instance]: GIAS3 lowerlimb model to be used to customise Gait2392.
 - **landmarks** [dict][optional] : Dictionary of {landmark_names : landmark_coordinates}. Must be provided if any model markers are to be adjusted to input marker positions.
 - **fieldworkmodeldict** [dict][optional] :
-    Fieldwork bone models to be used to customise Gait2392. The models will be combined in a GIAS2 LowerLimbAtlas model.
+    Fieldwork bone models to be used to customise Gait2392. The models will be combined in a GIAS3 LowerLimbAtlas model.
     Dictionary keys should be
         pelvis,
         femur-l,
@@ -50,7 +50,7 @@ Inputs
 Outputs
 -------
 - **osimmodel** [opensim.Model instance] : The customised Gait2392 opensim model.
-- **gias-lowerlimb** [GIAS2 LowerLimbAtlas instance]: Lowerlimb model used in the customisation.
+- **gias-lowerlimb** [GIAS3 LowerLimbAtlas instance]: Lowerlimb model used in the customisation.
 
 Usage
 -----
@@ -78,14 +78,14 @@ Configuration
 Scale Factor Calculation
 ------------------------
 Orthotropic scale factors are calculated for each Gait2392 body to scale body mass and inertia parameters.
-For bodies without a corresponding GIAS2 LowerlimbAtlas model bone (torso, talus, calcaneus, toes), the scale factors are also used to scale joint locations.
+For bodies without a corresponding GIAS3 LowerlimbAtlas model bone (torso, talus, calcaneus, toes), the scale factors are also used to scale joint locations.
 
-In general, given the distance l_d between 2 default Gait2392 markers and the distance l_s between the 2 corresponding markers on the GIAS2 lowerlimb model, the scale factors is l_s/l_d.
+In general, given the distance l_d between 2 default Gait2392 markers and the distance l_s between the 2 corresponding markers on the GIAS3 lowerlimb model, the scale factors is l_s/l_d.
 An offset is applied to the model landmarks to account for the difference between the reference markers which are on the skin surface, and input model markers which are on the bone surface.
-The offset for each marker was calculated by customising the GIAS2 lowerlimb model to the reference Gait2392 model and calculating the vectors from each GIAS2 model marker to the corresponding Gait2392 marker.
+The offset for each marker was calculated by customising the GIAS3 lowerlimb model to the reference Gait2392 model and calculating the vectors from each GIAS3 model marker to the corresponding Gait2392 marker.
 
 Different markers are used to calculate the scale factors in difference bodies and in different anatomical directions.
-For each of the GIAS2 lowerlimb model bodies, their scale factors are calculated thus:
+For each of the GIAS3 lowerlimb model bodies, their scale factors are calculated thus:
 
 - Pelvis
     - x scaling: Sacral to midpoint(LASIS, RASIS) distance
