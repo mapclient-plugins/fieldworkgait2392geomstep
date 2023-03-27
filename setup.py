@@ -50,7 +50,7 @@ package_dependencies = [
     "numpy",
     "gias3.musculoskeletal",
     "gias3.mesh",
-    "gias3.musculoskeletal",
+    "gias3.image_analysis",
     "gias3.common",
     "opensim >= 4.2"
 ]
