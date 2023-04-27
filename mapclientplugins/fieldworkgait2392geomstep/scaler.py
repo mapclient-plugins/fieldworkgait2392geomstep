@@ -396,7 +396,7 @@ def calc_scale_factors_all_bodies_old(LL, unit_scaling, scale_other_bodies=True)
     """
 
     sf_list = []
-        # torso
+    # torso
     scale_list.append(
         osim.Scale(average_scale_factors, 'torso_scaling', 'torso')
     )

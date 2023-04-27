@@ -56,8 +56,8 @@ _boneModelFilenamesLeft = {
 }
 
 
-def _outputModelDict(LL):
-    outputModelDict = dict([(m[0], m[1].gf) for m in LL.models.items()])
+def _output_model_dict(ll):
+    outputModelDict = dict([(m[0], m[1].gf) for m in ll.models.items()])
     return outputModelDict
 
 
@@ -82,14 +82,14 @@ LL.load_bones()
 
 LL.update_all_models(*ll_params)
 
-# inputModelDict = _outputModelDict(LL)
+# inputModelDict = _output_model_dict(LL)
 # inputModelDict['femur-left'] = inputModelDict['femur']
 # inputModelDict['tibiafibula-left'] = inputModelDict['tibiafibula']
 
 # llt = LLTransformData()
-# llt.pelvisRigid = ll_params[2]
-# llt.hipRot = ll_params[3]
-# llt.kneeRot = ll_params[4]
+# llt.pelvis_rigid = ll_params[2]
+# llt.hip_rot = ll_params[3]
+# llt.knee_rot = ll_params[4]
 
 # test config file
 output_dir = str(os.path.join(os.path.split(__file__)[0], 'output/'))

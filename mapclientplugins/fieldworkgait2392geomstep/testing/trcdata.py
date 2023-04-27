@@ -4,6 +4,7 @@ TRCData class by Hugh Sorby, taken from
 https://github.com/mapclient-plugins/trcsourcestep
 """
 
+
 class TRCData(dict):
 
     def load(self, filename):
@@ -34,7 +35,8 @@ class TRCData(dict):
                             else:
                                 self[key] = float(file_header_data[index])
                     else:
-                        raise IOError('File format invalid: File header keys count (%d) is not equal to file header data count (%d)' % (len(file_header_keys), len(file_header_data)))
+                        raise IOError('File format invalid: File header keys count (%d) is not equal to file header data count (%d)'
+                                      % (len(file_header_keys), len(file_header_data)))
                 elif line_count == 4:
                     # Data Header 1
                     data_header_labels = line.split('\t')
@@ -49,7 +51,8 @@ class TRCData(dict):
                     # Data Header 1
                     data_header_sublabels = line.split('\t')
                     if len(data_header_labels) != len(data_header_sublabels):
-                        raise IOError('File format invalid: Data header labels count (%d) is not equal to data header sub-labels count (%d)' % (len(data_header_labels), len(data_header_sublabels)))
+                        raise IOError('File format invalid: Data header labels count (%d) is not equal to data header sub-labels count (%d)'
+                                      % (len(data_header_labels), len(data_header_sublabels)))
 
                     labels = []
                     for label in data_header_labels:

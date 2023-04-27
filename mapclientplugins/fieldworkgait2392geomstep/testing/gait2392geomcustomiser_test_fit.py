@@ -39,8 +39,8 @@ _boneModelFilenamesLeft = {
 }
 
 
-def _outputModelDict(LL):
-    outputModelDict = dict([(m[0], m[1].gf) for m in LL.models.items()])
+def _output_model_dict(ll):
+    outputModelDict = dict([(m[0], m[1].gf) for m in ll.models.items()])
     return outputModelDict
 
 
@@ -84,7 +84,7 @@ LL.load_bones()
 trc = trcdata.TRCData()
 trc.load(mocap_file)
 all_landmarks = trc.get_frame(mocap_frame)
-target_landmark_coords_raw = np.array([all_landmarks[l] for l in target_landmark_names])
+target_landmark_coords_raw = np.array([all_landmarks[landmark_name] for landmark_name in target_landmark_names])
 target_landmark_coords = np.array(mocap_landmark_preprocess.preprocess_lower_limb(
     5.0, 10.0, *target_landmark_coords_raw))
 
@@ -92,21 +92,18 @@ target_landmark_coords = np.array(mocap_landmark_preprocess.preprocess_lower_lim
 # Fit                                               #
 # ===================================================#
 # single stage fit
-fitting_xs, \
-opt_landmark_dist, \
-opt_landmark_rmse, \
-min_info = lowerlimbatlasfit.fit(
+fitting_xs, opt_landmark_dist, opt_landmark_rmse, min_info = lowerlimbatlasfit.fit(
     LL, target_landmark_coords, source_landmark_names,
     pc_modes, mweight, minimise_args=min_args)
 fitted_landmark_coords = min_info['opt_source_landmarks']
 print('Fitted landmark RMSE: {}'.format(opt_landmark_rmse))
 
-inputModelDict = _outputModelDict(LL)
+inputModelDict = _output_model_dict(LL)
 
 # llt = LLTransformData()
-# llt.pelvisRigid = ll_params[2]
-# llt.hipRot = ll_params[3]
-# llt.kneeRot = ll_params[4]
+# llt.pelvis_rigid = ll_params[2]
+# llt.hip_rot = ll_params[3]
+# llt.knee_rot = ll_params[4]
 
 # test config file
 output_dir = str(os.path.join(os.path.split(__file__)[0], 'output/'))

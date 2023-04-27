@@ -438,11 +438,11 @@ class Gait2392GeomCustomiser(object):
         else:
             tilt, _list, rot = calc_pelvis_ground_angles(pelvis)
 
-        ## tilt
+        # tilt
         pelvis_ground_joint.coordSets['pelvis_tilt'].defaultValue = tilt
-        ## list
+        # list
         pelvis_ground_joint.coordSets['pelvis_list'].defaultValue = _list
-        ## rotation
+        # rotation
         pelvis_ground_joint.coordSets['pelvis_rotation'].defaultValue = rot
 
         if self.verbose:
@@ -461,21 +461,21 @@ class Gait2392GeomCustomiser(object):
         lhgf, sacgf, rhgf = _splitPelvisGFs(self.LL.models['pelvis'].gf)
         self._check_geom_path()
 
-        ## sacrum.vtp
+        # sacrum.vtp
         sac_vtp_full_path = os.path.join(
             self.config['osim_output_dir'], GEOM_DIR, SACRUM_FILENAME
         )
         sac_vtp_osim_path = os.path.join(GEOM_DIR, SACRUM_FILENAME)
         self._save_vtp(sacgf, sac_vtp_full_path, pelvis.acs.map_local)
 
-        ## pelvis.vtp
+        # pelvis.vtp
         rh_vtp_full_path = os.path.join(
             self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME
         )
         rh_vtp_osim_path = os.path.join(GEOM_DIR, HEMIPELVIS_RIGHT_FILENAME)
         self._save_vtp(rhgf, rh_vtp_full_path, pelvis.acs.map_local)
 
-        ## l_pelvis.vtp
+        # l_pelvis.vtp
         lh_vtp_full_path = os.path.join(
             self.config['osim_output_dir'], GEOM_DIR, HEMIPELVIS_LEFT_FILENAME
         )
@@ -560,11 +560,11 @@ class Gait2392GeomCustomiser(object):
             flex, rot, add = calc_hip_angles(pelvis, femur, side)
 
         hip_joint = self.osimmodel.joints['hip_{}'.format(side)]
-        ## hip_flexion_l
+        # hip_flexion_l
         hip_joint.coordSets['hip_flexion_{}'.format(side)].defaultValue = flex
-        ## hip_adduction_l
+        # hip_adduction_l
         hip_joint.coordSets['hip_adduction_{}'.format(side)].defaultValue = add
-        ## hip_rotation_l
+        # hip_rotation_l
         hip_joint.coordSets['hip_rotation_{}'.format(side)].defaultValue = rot
 
         if self.verbose:

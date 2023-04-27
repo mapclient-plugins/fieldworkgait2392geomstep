@@ -39,28 +39,28 @@ class ConfigureDialog(QtWidgets.QDialog):
             self._ui.tableWidgetLandmarks,
         )
 
-        self._setupDialog()
-        self._makeConnections()
+        self._setup_dialog()
+        self._make_connections()
 
-    def _setupDialog(self):
+    def _setup_dialog(self):
         for s in VALID_UNITS:
             self._ui.comboBox_in_unit.addItem(s)
             self._ui.comboBox_out_unit.addItem(s)
 
         self._ui.lineEdit_subject_mass.setValidator(QtGui.QDoubleValidator())
 
-    def _makeConnections(self):
+    def _make_connections(self):
         self._ui.lineEdit_id.textChanged.connect(self.validate)
         self._ui.lineEdit_osim_output_dir.textChanged.connect(
-            self._osimOutputDirEdited)
+            self._osim_output_dir_edited)
         self._ui.pushButton_osim_output_dir.clicked.connect(
-            self._osimOutputDirClicked)
+            self._osim_output_dir_clicked)
         self._ui.pushButton_addLandmark.clicked.connect(
-            self.markerTable.addLandmark)
+            self.markerTable.add_landmark)
         self._ui.pushButton_removeLandmark.clicked.connect(
-            self.markerTable.removeLandmark)
+            self.markerTable.remove_landmark)
 
-    def setWorkflowLocation(self, location):
+    def set_workflow_location(self, location):
         self._workflow_location = location
 
     def _output_location(self, location=None):
@@ -78,17 +78,17 @@ class ConfigureDialog(QtWidgets.QDialog):
         Override the accept method so that we can confirm saving an
         invalid configuration.
         """
-        result = QtWidgets.QMessageBox.Yes
+        result = QtWidgets.QMessageBox.StandardButton.Yes
         if not self.validate():
             result = QtWidgets.QMessageBox.warning(
                 self, 'Invalid Configuration',
                 'This configuration is invalid. Unpredictable behaviour may '
                 'result if you choose \'Yes\', are you sure you want to save '
                 'this configuration?)',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                QtWidgets.QMessageBox.No)
+                QtWidgets.QMessageBox.StandardButton(QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No),
+                QtWidgets.QMessageBox.StandardButton.No)
 
-        if result == QtWidgets.QMessageBox.Yes:
+        if result == QtWidgets.QMessageBox.StandardButton.Yes:
             QtWidgets.QDialog.accept(self)
 
     def validate(self):
@@ -111,7 +111,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         self._ui.lineEdit_osim_output_dir.setStyleSheet(DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
 
         valid = id_valid and location_valid
-        self._ui.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(valid)
+        self._ui.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setEnabled(valid)
 
         return valid
 
@@ -122,14 +122,13 @@ class ConfigureDialog(QtWidgets.QDialog):
         the identifier over the whole of the workflow.
         """
         self._previousIdentifier = self._ui.lineEdit_id.text()
-        config = {}
-        config['identifier'] = self._ui.lineEdit_id.text()
-        config['osim_output_dir'] = self._ui.lineEdit_osim_output_dir.text()
-        config['in_unit'] = self._ui.comboBox_in_unit.currentText()
-        config['out_unit'] = self._ui.comboBox_out_unit.currentText()
-        config['adj_marker_pairs'] = self.markerTable.getLandmarkPairs()
-        # print('DING')
-        # print(config['adj_marker_pairs'])
+        config = {
+            'identifier': self._ui.lineEdit_id.text(),
+            'osim_output_dir': self._ui.lineEdit_osim_output_dir.text(),
+            'in_unit': self._ui.comboBox_in_unit.currentText(),
+            'out_unit': self._ui.comboBox_out_unit.currentText(),
+            'adj_marker_pairs': self.markerTable.get_landmark_pairs()
+        }
 
         subject_mass = str(self._ui.lineEdit_subject_mass.text())
         if len(subject_mass) == 0 or (subject_mass is None):
@@ -182,7 +181,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         )
 
         for mm, im in sorted(config['adj_marker_pairs'].items()):
-            self.markerTable.addLandmark(mm, im)
+            self.markerTable.add_landmark(mm, im)
 
         if config['subject_mass'] is not None:
             self._ui.lineEdit_subject_mass.setText(str(config['subject_mass']))
@@ -207,7 +206,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         else:
             self._ui.checkBox_GUI.setChecked(bool(False))
 
-    def _osimOutputDirClicked(self):
+    def _osim_output_dir_clicked(self):
         location = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self._previousOsimOutputDir)
 
         if location:
@@ -215,5 +214,5 @@ class ConfigureDialog(QtWidgets.QDialog):
             display_location = self._output_location(location)
             self._ui.lineEdit_osim_output_dir.setText(display_location)
 
-    def _osimOutputDirEdited(self):
+    def _osim_output_dir_edited(self):
         self.validate()

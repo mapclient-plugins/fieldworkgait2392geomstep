@@ -145,7 +145,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
             self._configured = True
         """
         dlg = ConfigureDialog(self._main_window)
-        dlg.setWorkflowLocation(self._location)
+        dlg.set_workflow_location(self._location)
         dlg.identifierOccursCount = self._identifierOccursCount
         dlg.setConfig(self._config)
         dlg.validate()
@@ -185,7 +185,7 @@ class FieldworkGait2392GeomStep(WorkflowStepMountPoint):
         self._config.update(json.loads(string))
 
         d = ConfigureDialog(self._main_window)
-        d.setWorkflowLocation(self._location)
+        d.set_workflow_location(self._location)
         d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()
