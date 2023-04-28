@@ -78,7 +78,8 @@ class TRCData(dict):
 
                         len_section = len(sections)
                         if len_section % data_format_count == 0:
-                            data = [[float(sections[subindex]) for subindex in xrange(index, index + data_format_count)] for index in xrange(0, len_section, data_format_count)]
+                            data = [[float(sections[subindex]) for subindex in range(index, index + data_format_count)]
+                                    for index in range(0, len_section, data_format_count)]
                             self[frame] = (time, data)
 
                             for index, label_data in enumerate(data):
