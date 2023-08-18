@@ -4,6 +4,8 @@ Tests for the gait2392geomcustomiser.py module
 import os
 import sys
 
+import musculoskeletal.models as mm
+
 import numpy as np
 import copy
 from gias3.fieldwork.field import geometric_field
@@ -16,7 +18,7 @@ from lltransform import LLTransformData
 
 SELF_DIRECTORY = os.path.dirname(__file__)
 
-_shapeModelFilenameRight = os.path.join(SELF_DIRECTORY, 'data/shape_models/LLP26_right_mirrored_from_left_rigid.pc')
+_shapeModelFilenameRight = mm.get_model_path("shape_models/LLP26_right_mirrored_from_left_rigid.pc")
 _boneModelFilenamesRight = {
     'pelvis': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_mean_rigid_LLP26.geof'),
                os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.ens'),
@@ -35,7 +37,7 @@ _boneModelFilenamesRight = {
                     os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/tibia_fibula_right_cubic_flat.mesh'),
                     ),
 }
-_shapeModelFilenameLeft = os.path.join(SELF_DIRECTORY, 'data/shape_models/LLP26_rigid.pc')
+_shapeModelFilenameLeft = mm.get_model_path("shape_models/LLP26_rigid.pc")
 _boneModelFilenamesLeft = {
     'pelvis': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_mean_rigid_LLP26.geof'),
                os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.ens'),

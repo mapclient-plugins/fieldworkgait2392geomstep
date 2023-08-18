@@ -6,6 +6,8 @@ import sys
 import numpy as np
 import copy
 
+import musculoskeletal.models as mm
+
 import gait2392geomcustomiser as g23
 from gias3.fieldwork.field import geometric_field
 from gias3.musculoskeletal.bonemodels import bonemodels
@@ -18,7 +20,7 @@ from lltransform import LLTransformData
 import trcdata
 
 SELF_DIRECTORY = os.path.split(__file__)[0]
-_shapeModelFilenameLeft = os.path.join(SELF_DIRECTORY, 'data/shape_models/LLP26_rigid.pc')
+_shapeModelFilenameLeft = mm.get_model_path("shape_models/LLP26_rigid.pc")
 _boneModelFilenamesLeft = {
     'pelvis': (os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_mean_rigid_LLP26.geof'),
                os.path.join(SELF_DIRECTORY, 'data/atlas_meshes/pelvis_combined_cubic_flat.ens'),
